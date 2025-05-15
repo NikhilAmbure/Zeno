@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,HttpResponse
 
 # Create your views here.
 
@@ -8,8 +8,15 @@ def index(request):
 
 
 def login(request):
-    pass
+    return render(request, 'login.html')
 
 def logout(request):
-    pass
+    return HttpResponse("logged out")
 
+
+def register_page(request):
+    return render(request, 'register.html')
+
+
+def enter_otp_page(request):
+    return render(request, 'enter_otp')
