@@ -36,46 +36,48 @@
   <!--
     - MODAL
   -->
-
+{% if not user.is_authenticated %}
   <div class="modal" data-modal>
 
     <div class="modal-close-overlay" data-modal-overlay></div>
+    
+      <div class="modal-content">
 
-    <div class="modal-content">
+        <button class="modal-close-btn" data-modal-close>
+          <ion-icon name="close-outline"></ion-icon>
+        </button>
 
-      <button class="modal-close-btn" data-modal-close>
-        <ion-icon name="close-outline"></ion-icon>
-      </button>
+        <div class="newsletter-img">
+          <img src="{% static "assets/images/newsletter.png" %}" alt="subscribe newsletter" width="400" height="400">
+        </div>
 
-      <div class="newsletter-img">
-        <img src="{% static "assets/images/newsletter.png" %}" alt="subscribe newsletter" width="400" height="400">
-      </div>
+        <div class="newsletter">
 
-      <div class="newsletter">
+          <form action="#">
 
-        <form action="#">
+            <div class="newsletter-header">
 
-          <div class="newsletter-header">
+              <h3 class="newsletter-title">Subscribe Newsletter.</h3>
 
-            <h3 class="newsletter-title">Subscribe Newsletter.</h3>
+              <p class="newsletter-desc">
+                Subscribe the <b>Zeno</b> to get latest products and discount update.
+              </p>
 
-            <p class="newsletter-desc">
-              Subscribe the <b>Zeno</b> to get latest products and discount update.
-            </p>
+            </div>
 
-          </div>
+            <input type="email" name="email" class="email-field" placeholder="Email Address" required>
 
-          <input type="email" name="email" class="email-field" placeholder="Email Address" required>
+            <button type="submit" class="btn-newsletter">Subscribe</button>
 
-          <button type="submit" class="btn-newsletter">Subscribe</button>
+          </form>
 
-        </form>
-
-      </div>
+        </div>
+      
 
     </div>
 
   </div>
+{% endif %}
 
 
 

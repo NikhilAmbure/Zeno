@@ -12,7 +12,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
 
-    otp = models.CharField(max_length=6, blank=True, null=True)  # store OTP temporarily
+    otp = models.IntegerField(default=0)  # store OTP temporarily
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
