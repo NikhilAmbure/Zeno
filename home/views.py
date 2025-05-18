@@ -5,7 +5,7 @@ from .emailer import sendOTPToEmail
 import random
 from django.contrib.auth import get_user_model, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser
+from .models import CustomUser, Product
 
 
 # Gets the custom user model
@@ -16,7 +16,15 @@ User = get_user_model()
 
 @login_required(login_url='/login/')
 def index(request):
-    return render(request, 'index.html')
+    new_arrivals = Product.objects.filter(is_new=True)[:5]
+    trending = Product.objects.filter(is_trending=True)[:5]
+    top_rated = Product.objects.filter(is_top_rated=True)[:5]
+    
+    return render(request, 'index.html', {
+        'new_arrivals': new_arrivals,
+        'trending': trending,
+        'top_rated': top_rated,
+    })
 
 
 def login_page(request):
@@ -121,3 +129,18 @@ def enter_otp_page(request, user_id):
     
 
     return render(request, 'enter_otp.html')
+
+
+
+
+def cart_view(request):
+    return render(request, 'cart.html')
+
+
+def wishlist_view(request):
+    return render(request, 'wishlist.html')
+
+
+@login_required(login_url='/login/')
+def edit_profile_view(request):
+    return render(request, 'edit_profile.html')

@@ -21,7 +21,41 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+
+# models.py
+
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+class SubCategory(models.Model):
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="subcategories")
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.category.name} - {self.name}"
     
+
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to='products/')
+    category = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
+    old_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    is_new = models.BooleanField(default=False)
+    is_trending = models.BooleanField(default=False)
+    is_top_rated = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+
 
 
 # # Order Model

@@ -78,9 +78,13 @@ WSGI_APPLICATION = 'Zeno.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "zeno_db",
+        "USER": "postgres",
+        "PASSWORD": "1702",
+        "HOST": "localhost",
+        "PORT": "",
     }
 }
 
@@ -125,6 +129,9 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
@@ -147,4 +154,4 @@ EMAIL_PORT = 587
 
 
 EMAIL_HOST_USER = "no.reply.authsystem@gmail.com"
-EMAIL_HOST_PASSWORD = ""
+EMAIL_HOST_PASSWORD = "ioqv flub nxin lbaa"
