@@ -1430,6 +1430,8 @@ body::-webkit-scrollbar-thumb:hover { background: hsl(0, 0%, 70%); }
   color: var(--white);
 }
 
+
+
 .product-featured .showcase-status { margin-bottom: 15px; }
 
 .product-featured .showcase-status .wrapper {

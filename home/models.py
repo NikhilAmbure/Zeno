@@ -6,12 +6,16 @@ from django.utils import timezone
 # Create your models here.
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
+    name = models.CharField(max_length=100, blank=True, null=True)
     username = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to="profile_pics/", blank=True, null=True)
+
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
-
     otp = models.IntegerField(default=0)  # store OTP temporarily
 
     USERNAME_FIELD = 'email'

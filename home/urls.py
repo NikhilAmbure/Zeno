@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import index, login_page, logout, register_page, enter_otp_page, cart_view, wishlist_view, edit_profile_view
+from .views import *
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -10,6 +10,8 @@ urlpatterns = [
     path('cart/', cart_view, name='cart'),
     path('wishlist/', wishlist_view, name='wishlist'),
     path('edit-profile/', edit_profile_view, name='edit-profile'),
-    path('', index),
+    path('product/<int:pk>/', product_detail, name='product_detail'),
+    path('add-to-cart/<int:product_id>/', add_to_cart, name='add_to_cart'),
+    path('', index, name='index'),
 
 ]

@@ -16,9 +16,12 @@ User = get_user_model()
 
 @login_required(login_url='/login/')
 def index(request):
-    new_arrivals = Product.objects.filter(is_new=True)[:5]
-    trending = Product.objects.filter(is_trending=True)[:5]
-    top_rated = Product.objects.filter(is_top_rated=True)[:5]
+
+    # print("Current session user:", request.user.email) #debug (ignore for now)
+
+    new_arrivals = Product.objects.filter(is_new=True)[:4]
+    trending = Product.objects.filter(is_trending=True)[:4]
+    top_rated = Product.objects.filter(is_top_rated=True)[:4]
     
     return render(request, 'index.html', {
         'new_arrivals': new_arrivals,
@@ -143,4 +146,29 @@ def wishlist_view(request):
 
 @login_required(login_url='/login/')
 def edit_profile_view(request):
-    return render(request, 'edit_profile.html')
+
+    user = request.user
+
+    if request.method == "POST":
+
+        if request.FILES.get('profile'):
+            user.profile_picture = request.FILES['profile']
+        print("Logged in user:", request.user.email)
+        user.username = request.POST.get('username')
+        user.phone = request.POST.get('phone')
+        user.location = request.POST.get('location')
+        user.save()
+
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('edit-profile')
+
+    return render(request, 'edit_profile.html', {'user': user})
+
+
+
+def product_detail(request):
+    return render(request, 'product_detail.html')
+
+
+def add_to_cart(request):
+    pass
