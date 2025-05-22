@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from .manager import CustomUserManager
 from django.utils import timezone
+from django.conf import settings
 
 # Create your models here.
 
@@ -58,6 +59,25 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+
+
+class CartItem(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart_items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')  # Prevent duplicate items for same user/product
+
+    def __str__(self):
+        return f"{self.product.name} x {self.quantity} ({self.user.email})"
+
+    @property
+    def total_price(self):
+        return self.product.price * self.quantity
 
 
 

@@ -250,10 +250,12 @@
             <span class="count">0</span>
           </a>
 
+          {% comment %} ************Showing cart count on icon************ {% endcomment %}
           <a href="{% url 'cart' %}" class="action-btn">
             <ion-icon name="bag-handle-outline"></ion-icon>
-            <span class="count">0</span>
+            <span class="count">{{ cart_count }}</span>
           </a>
+
 
         </div>
 
@@ -1604,7 +1606,7 @@
 
                   <div class="showcase">
 
-                    <a href="#" class="showcase-img-box">
+                    <a href="{% url 'product_detail' product.id %}" class="showcase-img-box">
                       <img src="{{ product.image.url }}" alt="{{ product.name }}" class="showcase-img" width="70" />
                     </a>
 
@@ -1654,7 +1656,7 @@
 
                   <div class="showcase">
 
-                    <a href="#" class="showcase-img-box">
+                    <a href="{% url 'product_detail' product.id %}" class="showcase-img-box">
                       <img src="{{ product.image.url }}" alt="{{ product.name }}" class="showcase-img" width="70" />
                     </a>
 
@@ -1705,7 +1707,7 @@
 
                   <div class="showcase">
 
-                    <a href="#" class="showcase-img-box">
+                    <a href="{% url 'product_detail' product.id %}" class="showcase-img-box">
                       <img src="{{ product.image.url }}" alt="{{ product.name }}" class="showcase-img" width="70" />
                     </a>
 

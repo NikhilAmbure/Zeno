@@ -1,13 +1,12 @@
-
 <!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
-
 
 <section class="min-h-screen bg-gray-50 py-10">
   <div class="container mx-auto px-4">
     <h2 class="text-3xl font-semibold mb-8 text-center">Your Cart</h2>
 
     <div class="overflow-x-auto bg-white shadow rounded-xl p-6">
+
       <table class="w-full table-auto text-left">
         <thead>
           <tr class="text-gray-600 uppercase text-sm border-b">
@@ -24,10 +23,28 @@
               <img src="{{ item.product.image.url }}" class="w-16 h-16 object-cover rounded" alt="{{ item.product.name }}">
               <span class="font-medium">{{ item.product.name }}</span>
             </td>
-            <td class="py-4">{{ item.quantity }}</td>
-            <td class="py-4 font-semibold text-green-600">₹{{ item.total_price }}</td>
+
+            <!-- Quantity Update Form -->
             <td class="py-4">
-              <a href="{% url 'remove_from_cart' item.id %}" class="text-red-500 hover:underline">Remove</a>
+              <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}" class="inline-block">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="decrease">
+                <button type="submit" class="px-2 py-1 bg-gray-200 rounded">−</button>
+              </form>
+
+              <span class="px-2">{{ item.quantity }}</span>
+
+              <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}" class="inline-block">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="increase">
+                <button type="submit" class="px-2 py-1 bg-gray-200 rounded">+</button>
+              </form>
+            </td>
+
+
+            <td class="py-4 font-semibold text-green-600">₹{{ item.subtotal }}</td>
+            <td class="py-4">
+              <a href="{% url 'remove_from_cart' item.product.id %}" class="text-red-500 hover:underline">Remove</a>
             </td>
           </tr>
           {% empty %}
@@ -36,10 +53,21 @@
           </tr>
           {% endfor %}
         </tbody>
+        <tfoot>
+          <tr class="font-bold text-lg border-t">
+            <td colspan="2" class="py-4 text-right">Total:</td>
+            <td colspan="2" class="py-4 text-green-700">₹{{ total_price }}</td>
+          </tr>
+        </tfoot>
       </table>
+
       <div class="flex justify-end mt-6">
         <a href="#" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Checkout</a>
       </div>
     </div>
   </div>
 </section>
+
+<script>
+  history.replaceState(null, '', location.href);
+</script>

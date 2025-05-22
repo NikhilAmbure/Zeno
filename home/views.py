@@ -1,12 +1,11 @@
-from django.shortcuts import render,HttpResponse, redirect
+from django.shortcuts import render,HttpResponse, redirect, get_object_or_404
 from django.core.cache import cache
 from django.contrib import messages
 from .emailer import sendOTPToEmail
 import random
 from django.contrib.auth import get_user_model, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser, Product
-
+from .models import CustomUser, Product, CartItem
 
 # Gets the custom user model
 User = get_user_model()
@@ -135,9 +134,28 @@ def enter_otp_page(request, user_id):
 
 
 
+# To show the cart items
 
 def cart_view(request):
-    return render(request, 'cart.html')
+    cart = request.session.get('cart', {})
+    products = Product.objects.filter(id__in=cart.keys())
+
+    cart_items = []
+    total_price = 0
+    for product in products:
+        quantity = cart[str(product.id)]
+        total_price += product.price * quantity
+        cart_items.append({
+            'product': product,
+            'quantity': quantity,
+            'subtotal': product.price * quantity
+        })
+
+    context = {
+        'cart_items': cart_items,
+        'total_price': total_price
+    }
+    return render(request, 'cart.html', context)
 
 
 def wishlist_view(request):
@@ -166,9 +184,61 @@ def edit_profile_view(request):
 
 
 
-def product_detail(request):
-    return render(request, 'product_detail.html')
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    return render(request, 'product_detail.html', {'product': product})
 
 
-def add_to_cart(request):
-    pass
+# To add the items into cart
+def add_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    # Get cart session , or initialize empty dict
+    cart = request.session.get('cart', {})
+
+    # Add product to cart
+    if str(product_id) in cart:
+        cart[str(product_id)] += 1
+    else:
+        cart[str(product_id)] = 1
+
+    # Save cart back to session
+    request.session['cart'] = cart 
+    request.session.modified = True
+
+    return redirect('product_detail', pk=product.id)
+
+
+def remove_from_cart(request, product_id):
+    cart = request.session.get('cart', {})
+    product_id_str = str(product_id)
+
+    if product_id_str in cart:
+        del cart[product_id_str]
+        request.session['cart'] = cart
+        request.session.modified = True
+
+    return redirect('cart')
+
+
+
+# Increase or decrease the quantity
+def update_cart_quantity(request, product_id):
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        cart = request.session.get('cart', {})
+
+        product_id_str = str(product_id)
+        if product_id_str in cart:
+            if action == 'increase':
+                cart[product_id_str] += 1
+            elif action == 'decrease':
+                if cart[product_id_str] > 1:
+                    cart[product_id_str] -= 1
+                else:
+                    del cart[product_id_str]
+
+        request.session['cart'] = cart
+        request.session.modified = True
+
+    return redirect('cart')
