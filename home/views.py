@@ -21,11 +21,15 @@ def index(request):
     new_arrivals = Product.objects.filter(is_new=True)[:4]
     trending = Product.objects.filter(is_trending=True)[:4]
     top_rated = Product.objects.filter(is_top_rated=True)[:4]
+    dotd = Product.objects.filter(dotd=True)[:2]
+    new_products = Product.objects.filter(new_prod=True)[:12]
     
     return render(request, 'index.html', {
         'new_arrivals': new_arrivals,
         'trending': trending,
         'top_rated': top_rated,
+        'deal_of_the_day': dotd,
+        'new_products': new_products,
     })
 
 
@@ -205,6 +209,8 @@ def add_to_cart(request, product_id):
     # Save cart back to session
     request.session['cart'] = cart 
     request.session.modified = True
+
+    messages.success(request, f"Added to cart!")
 
     return redirect('product_detail', pk=product.id)
 

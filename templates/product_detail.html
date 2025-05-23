@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <title>{{ product.name }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  
 </head>
 <body class="min-h-screen bg-gradient-to-br from-pink-50 to-gray-100 relative">
 
@@ -32,7 +33,7 @@
         <div>
           <h1 class="text-4xl font-extrabold text-gray-900 mb-3">{{ product.name }}</h1>
           <p class="text-gray-700 text-lg leading-relaxed mb-6">{{ product.description }}</p>
-          <p class="text-3xl font-bold text-[#FA8072] mb-8">₹{{ product.price }}</p>
+          <p class="text-3xl font-bold text-[#FA8072] mb-8">${{ product.price }}</p>
         </div>
 
         <!-- Add to Cart Button -->
@@ -47,6 +48,21 @@
 
     </div>
   </div>
+
+  {% if messages %}
+    <div id="toast-message" class="fixed top-5 left-5 bg-green-500 text-white px-4 py-2 rounded shadow-lg text-sm z-50">
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+    </div>
+
+    <script>
+      setTimeout(() => {
+        const toast = document.getElementById('toast-message');
+        if (toast) toast.style.display = 'none';
+      }, 2000);  // Hide after 2 seconds
+    </script>
+  {% endif %}
 
   <!-- Ionicons CDN for icons -->
   <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
