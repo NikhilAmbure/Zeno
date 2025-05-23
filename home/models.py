@@ -60,6 +60,7 @@ class Product(models.Model):
     is_top_rated = models.BooleanField(default=False)
     new_prod = models.BooleanField(default=False)
     dotd = models.BooleanField(default=False)
+    best_sellers = models.BooleanField(default=False)
 
     def discount_percent(self):
         if self.old_price and self.old_price > self.price:

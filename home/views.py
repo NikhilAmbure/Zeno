@@ -23,6 +23,7 @@ def index(request):
     top_rated = Product.objects.filter(is_top_rated=True)[:4]
     dotd = Product.objects.filter(dotd=True)[:2]
     new_products = Product.objects.filter(new_prod=True)[:12]
+    best_sellers = Product.objects.filter(best_sellers=True)[:6]
     
     return render(request, 'index.html', {
         'new_arrivals': new_arrivals,
@@ -30,6 +31,7 @@ def index(request):
         'top_rated': top_rated,
         'deal_of_the_day': dotd,
         'new_products': new_products,
+        'best_sellers': best_sellers,
     })
 
 
