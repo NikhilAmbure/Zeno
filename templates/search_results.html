@@ -1,18 +1,174 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
+  <style>
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: white;
+    min-width: 140px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .dropdown-content a {
+    color: #333;
+    padding: 8px 12px;
+    text-decoration: none;
+    font-size: 14px;
+    display: block;
+  }
+
+  .dropdown-content a:hover {
+    background-color: #f8f8f8;
+  }
+
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+</style>
 <head>
   <meta charset="UTF-8">
-  <title>Search Results</title>
-  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zeno - eCommerce Website</title>
+
+  <!--
+    - favicon
+  -->
+  <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}" type="image/x-icon">
+
+  <!--
+    - custom css link
+  -->
+  <link rel="stylesheet" href="{% static "assets/css/style-prefix.css" %}">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!--
+    - google font link
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
 </head>
 
 
 <body class="bg-white text-black">
 
+  <div class="header-top">
+    <div class="container">
+
+        <ul class="header-social-container">
+
+          <li>
+            <a href="#" class="social-link">
+              <ion-icon name="logo-facebook"></ion-icon>
+            </a>
+          </li>
+
+          <li>
+            <a href="https://x.com/N1kh1l_A0" class="social-link" target="_blank">
+              <ion-icon name="logo-twitter"></ion-icon>
+            </a>
+          </li>
+
+          <li>
+            <a href="#" class="social-link">
+              <ion-icon name="logo-instagram"></ion-icon>
+            </a>
+          </li>
+
+          <li>
+            <a href="https://www.linkedin.com/in/nikhil-ambure-8a41a7248/" class="social-link" target="_blank">
+              <ion-icon name="logo-linkedin"></ion-icon>
+            </a>
+          </li>
+
+        </ul>
+
+        <div class="header-alert-news">
+          <p>
+            <b>Free Shipping</b>
+            This Week Order Over - $55
+          </p>
+        </div>
+
+        <div class="header-top-actions">
+        </div>
+
+    </div>
+    <div class="header-main">
+
+      <div class="container">
+
+        <a href="{% url 'index' %}" class="header-logo">
+          <img src="{% static "assets/images/logo/zeno_logo.png" %}" alt="Zeno's logo" width="120" height="120">
+        </a>
+
+        <div class="header-search-container">
+
+          <form method="get">
+              <input type="text" value="{% if search%} {{search}} {% endif %}" name="search" class="search-field" placeholder="Enter your product name...">
+              <button type= "submit" class="search-btn">
+                <ion-icon name="search-outline"></ion-icon>
+              </button>
+          </form>
+
+        </div>
+
+        {% comment %} *************Added ---> edit profile , login, logout**************  {% endcomment %}
+        <div class="header-user-actions">
+
+          <div class="dropdown">
+            <button class="action-btn">
+              <ion-icon name="person-outline"></ion-icon>
+            </button>
+            <div class="dropdown-content">
+              <a href="{% url 'edit-profile' %}">Edit Profile</a>
+              {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}">Logout</a>
+              {% else %}
+                <a href="{% url 'login' %}">Login</a>
+              {% endif %}
+            </div>
+          </div>
+
+          <a href="{% url 'wishlist' %}" class="action-btn">
+            <ion-icon name="heart-outline"></ion-icon>
+            <span class="count">0</span>
+          </a>
+
+          {% comment %} ************Showing cart count on icon************ {% endcomment %}
+          <a href="{% url 'cart' %}" class="action-btn">
+            <ion-icon name="bag-handle-outline"></ion-icon>
+            <span class="count">{{ cart_count }}</span>
+          </a>
+
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
   <div class="container mx-auto px-4 py-8">
-    <h2 class="text-2xl font-bold mb-6">Search Results for "{{ search }}"</h2>
+    {% if search %}
+      <h2 class="text-2xl font-bold mb-6">Search Results for "{{ search }}"</h2>
+    {% else %}
+      <h2 class="text-2xl font-bold mb-6">Start typing to search for products</h2>
+    {% endif %}
 
     {% if results %}
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -26,7 +182,7 @@
 
           <div class="text-xs text-gray-500 mb-1">{{ product.category.name }}</div>
 
-          <div class="text-yellow-400 text-sm">
+          <div class="text-yellow-400 text-sm flex gap-1 justify-center">
             <ion-icon name="star"></ion-icon>
             <ion-icon name="star"></ion-icon>
             <ion-icon name="star"></ion-icon>
@@ -43,7 +199,7 @@
 
           <form method="POST" action="{% url 'add_to_cart' product.id %}" class="mt-2">
             {% csrf_token %}
-            <button type="submit" class="text-xs bg-[#FA8072] text-black border border-[#FA8072] px-2 py-1 rounded hover:bg-black hover:text-white transition duration-300">
+            <button type="submit" class="mx-auto block text-xs bg-[#FA8072] text-black border border-[#FA8072] px-2 py-1 rounded hover:bg-black hover:text-white transition duration-300">
               Add to Cart
             </button>
           </form>
@@ -58,3 +214,8 @@
 
 </body>
 </html>
+
+
+<script src="{% static "assets/js/script.js" %}"></script>
+<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>

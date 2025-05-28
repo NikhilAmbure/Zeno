@@ -45,7 +45,7 @@
   <!--
     - favicon
   -->
-  <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}"" type="image/x-icon">
+  <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}" type="image/x-icon">
 
   <!--
     - custom css link
@@ -576,7 +576,7 @@
       <ul class="mobile-menu-category-list">
 
         <li class="menu-category">
-          <a href="#" class="menu-title">Home</a>
+          <a href="{% url 'index' %}" class="menu-title">Home</a>
         </li>
 
         <li class="menu-category">
@@ -593,19 +593,19 @@
           <ul class="submenu-category-list" data-accordion>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Shirt</a>
+              <a href="{% url 'search_results' %}?search=Shirt" class="submenu-title">Shirt</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Shorts & Jeans</a>
+              <a href="{% url 'search_results' %}?search=Jeans" class="submenu-title">Shorts & Jeans</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Safety Shoes</a>
+              <a href="{% url 'search_results' %}?search=Shoes" class="submenu-title">Safety Shoes</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Wallet</a>
+              <a href="{% url 'search_results' %}?search=Wallet" class="submenu-title">Wallet</a>
             </li>
 
           </ul>
@@ -617,7 +617,7 @@
           <button class="accordion-menu" data-accordion-btn>
             <p class="menu-title">Women's</p>
 
-            <div>
+            <div> 
               <ion-icon name="add-outline" class="add-icon"></ion-icon>
               <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
             </div>
@@ -626,19 +626,19 @@
           <ul class="submenu-category-list" data-accordion>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Dress & Frock</a>
+              <a href="{% url 'search_results' %}?search=Dress" class="submenu-title">Dress & Frock</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Earrings</a>
+              <a href="{% url 'search_results' %}?search=Earrings" class="submenu-title">Earrings</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Necklace</a>
+              <a href="{% url 'search_results' %}?search=Necklace" class="submenu-title">Necklace</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Makeup Kit</a>
+              <a href="{% url 'search_results' %}?search=Makeup" class="submenu-title">Makeup Kit</a>
             </li>
 
           </ul>
@@ -659,19 +659,19 @@
           <ul class="submenu-category-list" data-accordion>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Earrings</a>
+              <a href="{% url 'search_results' %}?search=Earrings" class="submenu-title">Earrings</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Couple Rings</a>
+              <a href="{% url 'search_results' %}?search=Rings" class="submenu-title">Couple Rings</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Necklace</a>
+              <a href="{% url 'search_results' %}?search=Necklace" class="submenu-title">Necklace</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Bracelets</a>
+              <a href="{% url 'search_results' %}?search=Bracelets" class="submenu-title">Bracelets</a>
             </li>
 
           </ul>
@@ -692,19 +692,19 @@
           <ul class="submenu-category-list" data-accordion>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Clothes Perfume</a>
+              <a href="{% url 'search_results' %}?search=Perfume" class="submenu-title">Clothes Perfume</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Deodorant</a>
+              <a href="{% url 'search_results' %}?search=Deodorant" class="submenu-title">Deodorant</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Flower Fragrance</a>
+              <a href="{% url 'search_results' %}?search=Flower%20Fragrance" class="submenu-title">Flower Fragrance</a>
             </li>
 
             <li class="submenu-category">
-              <a href="#" class="submenu-title">Air Freshener</a>
+              <a href="{% url 'search_results' %}?search=Air%20Freshener" class="submenu-title">Air Freshener</a>
             </li>
 
           </ul>
@@ -716,7 +716,7 @@
         </li>
 
         <li class="menu-category">
-          <a href="#" class="menu-title">Hot Offers</a>
+          <a href="{% url 'search_results' %}?search=Offers" class="menu-title">Hot Offers</a>
         </li>
 
       </ul>
@@ -922,7 +922,7 @@
                 <p class="category-item-amount">(53)</p>
               </div>
 
-              <a href="#" class="category-btn">Show all</a>
+              <a href="{% url 'search_results' %}?search=Dress" class="category-btn">Show all</a>
 
             </div>
 
@@ -942,7 +942,7 @@
                 <p class="category-item-amount">(58)</p>
               </div>
 
-              <a href="#" class="category-btn">Show all</a>
+              <a href="{% url 'search_results' %}?search=Winter%20Wear" class="category-btn">Show all</a>
 
             </div>
 
@@ -962,7 +962,7 @@
                 <p class="category-item-amount">(68)</p>
               </div>
 
-              <a href="#" class="category-btn">Show all</a>
+              <a href="{% url 'search_results' %}?search=Glasses%20lens%" class="category-btn">Show all</a>
 
             </div>
 
@@ -982,7 +982,7 @@
                 <p class="category-item-amount">(84)</p>
               </div>
 
-              <a href="#" class="category-btn">Show all</a>
+              <a href="{% url 'search_results' %}?search=Shorts%20Jeans" class="category-btn">Show all</a>
 
             </div>
 
@@ -1002,7 +1002,7 @@
                 <p class="category-item-amount">(35)</p>
               </div>
 
-              <a href="#" class="category-btn">Show all</a>
+              <a href="{% url 'search_results' %}?search=T-shirts" class="category-btn">Show all</a>
 
             </div>
 
@@ -1022,7 +1022,7 @@
                 <p class="category-item-amount">(16)</p>
               </div>
 
-              <a href="#" class="category-btn">Show all</a>
+              <a href="{% url 'search_results' %}?search=Jacket" class="category-btn">Show all</a>
 
             </div>
 
@@ -1042,7 +1042,7 @@
                 <p class="category-item-amount">(27)</p>
               </div>
 
-              <a href="#" class="category-btn">Show all</a>
+              <a href="{% url 'search_results' %}?search=Watch" class="category-btn">Show all</a>
 
             </div>
 
@@ -1062,7 +1062,7 @@
                 <p class="category-item-amount">(39)</p>
               </div>
 
-              <a href="#" class="category-btn">Show all</a>
+              <a href="{% url 'search_results' %}?search=Hat%20caps%" class="category-btn">Show all</a>
 
             </div>
 

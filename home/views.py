@@ -38,22 +38,19 @@ def index(request):
 # Fulltext search
 @login_required(login_url='/login/')
 def search_results(request):
-    search = request.GET.get('search', '').strip() 
-    
+    search = request.GET.get('search', '').strip()
     results = []
+
     if search:
         vector = SearchVector('name', weight='A') + SearchVector('description', weight='B') + SearchVector('category__name', weight='C')
         query = SearchQuery(search)
-        
-        results = Product.objects.annotate(
-            rank=SearchRank(vector, query)
-        ).filter(rank__gte=0.0).order_by('-rank')
-    
+
+        results = Product.objects.annotate(search=vector).filter(search=query)
+
     return render(request, 'search_results.html', {
         'results': results,
         'search': search,
     })
-
 
 
 def login_page(request):
