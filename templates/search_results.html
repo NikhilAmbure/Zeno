@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search Results</title>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+
+<body class="bg-white text-black">
+
+  <div class="container mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold mb-6">Search Results for "{{ search }}"</h2>
+
+    {% if results %}
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        {% for product in results %}
+        <div class="border rounded-lg shadow-sm p-2 text-center bg-gray-50 hover:shadow-md transition duration-300">
+
+          <a href="{% url 'product_detail' product.id %}">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="h-28 w-full object-contain mb-2 mx-auto">
+            <h3 class="text-sm font-medium truncate px-1">{{ product.name }}</h3>
+          </a>
+
+          <div class="text-xs text-gray-500 mb-1">{{ product.category.name }}</div>
+
+          <div class="text-yellow-400 text-sm">
+            <ion-icon name="star"></ion-icon>
+            <ion-icon name="star"></ion-icon>
+            <ion-icon name="star"></ion-icon>
+            <ion-icon name="star-outline"></ion-icon>
+            <ion-icon name="star-outline"></ion-icon>
+          </div>
+
+          <div class="text-sm font-semibold text-green-600 mt-1">
+            ${{ product.price }}
+            {% if product.old_price %}
+            <del class="text-gray-400 text-xs ml-1">${{ product.old_price }}</del>
+            {% endif %}
+          </div>
+
+          <form method="POST" action="{% url 'add_to_cart' product.id %}" class="mt-2">
+            {% csrf_token %}
+            <button type="submit" class="text-xs bg-[#FA8072] text-black border border-[#FA8072] px-2 py-1 rounded hover:bg-black hover:text-white transition duration-300">
+              Add to Cart
+            </button>
+          </form>
+
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-gray-500 mt-6">No products found matching your search.</p>
+    {% endif %}
+  </div>
+
+</body>
+</html>

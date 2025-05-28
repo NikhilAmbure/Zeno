@@ -18,4 +18,6 @@ urlpatterns = [
     path('wishlist/', wishlist_view, name='wishlist'),
     path('edit-profile/', edit_profile_view, name='edit-profile'),
     path('product/<int:pk>/', product_detail, name='product_detail'),
+
+    path('search/', search_results, name='search_results')
 ]

@@ -72,48 +72,48 @@
   <!--
     - MODAL
   -->
-{% if not user.is_authenticated %}
-  <div class="modal" data-modal>
+  {% if not user.is_authenticated %}
+    <div class="modal" data-modal>
 
-    <div class="modal-close-overlay" data-modal-overlay></div>
-    
-      <div class="modal-content">
-
-        <button class="modal-close-btn" data-modal-close>
-          <ion-icon name="close-outline"></ion-icon>
-        </button>
-
-        <div class="newsletter-img">
-          <img src="{% static "assets/images/newsletter.png" %}" alt="subscribe newsletter" width="400" height="400">
-        </div>
-
-        <div class="newsletter">
-
-          <form action="#">
-
-            <div class="newsletter-header">
-
-              <h3 class="newsletter-title">Subscribe Newsletter.</h3>
-
-              <p class="newsletter-desc">
-                Subscribe the <b>Zeno</b> to get latest products and discount update.
-              </p>
-
-            </div>
-
-            <input type="email" name="email" class="email-field" placeholder="Email Address" required>
-
-            <button type="submit" class="btn-newsletter">Subscribe</button>
-
-          </form>
-
-        </div>
+      <div class="modal-close-overlay" data-modal-overlay></div>
       
+        <div class="modal-content">
+
+          <button class="modal-close-btn" data-modal-close>
+            <ion-icon name="close-outline"></ion-icon>
+          </button>
+
+          <div class="newsletter-img">
+            <img src="{% static "assets/images/newsletter.png" %}" alt="subscribe newsletter" width="400" height="400">
+          </div>
+
+          <div class="newsletter">
+
+            <form action="#">
+
+              <div class="newsletter-header">
+
+                <h3 class="newsletter-title">Subscribe Newsletter.</h3>
+
+                <p class="newsletter-desc">
+                  Subscribe the <b>Zeno</b> to get latest products and discount update.
+                </p>
+
+              </div>
+
+              <input type="email" name="email" class="email-field" placeholder="Email Address" required>
+
+              <button type="submit" class="btn-newsletter">Subscribe</button>
+
+            </form>
+
+          </div>
+        
+
+      </div>
 
     </div>
-
-  </div>
-{% endif %}
+  {% endif %}
 
 
 
@@ -217,13 +217,18 @@
 
         <div class="header-search-container">
 
-          <input type="search" name="search" class="search-field" placeholder="Enter your product name...">
-
-          <button class="search-btn">
-            <ion-icon name="search-outline"></ion-icon>
-          </button>
+          <form method="get" action="{% url 'search_results' %}">
+              <input type="text" value="{% if search%} {{search}} {% endif %}" name="search" class="search-field" placeholder="Enter your product name...">
+              <button type= "submit" class="search-btn">
+                <ion-icon name="search-outline"></ion-icon>
+              </button>
+          </form>
 
         </div>
+
+        
+        
+
 
 
 
@@ -800,6 +805,8 @@
   </header>
 
 
+  
+
 
 
 
@@ -808,6 +815,7 @@
   -->
 
   <main>
+    
 
     <!--
       - BANNER
@@ -886,6 +894,7 @@
     </div>
 
 
+    
 
 
 
@@ -1501,6 +1510,7 @@
           <div class="product-minimal">
 
             {% comment %} ********New Arrivals********* {% endcomment %}
+
             <div class="product-showcase">
 
               <h2 class="title">New Arrivals</h2>

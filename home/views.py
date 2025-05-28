@@ -6,6 +6,8 @@ import random
 from django.contrib.auth import get_user_model, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser, Product, CartItem
+from django.contrib.postgres.search import (SearchQuery, SearchVector, SearchRank, TrigramSimilarity)
+from django.db.models import Q
 
 # Gets the custom user model
 User = get_user_model()
@@ -15,8 +17,6 @@ User = get_user_model()
 
 @login_required(login_url='/login/')
 def index(request):
-
-    # print("Current session user:", request.user.email) #debug (ignore for now)
 
     new_arrivals = Product.objects.filter(is_new=True)[:4]
     trending = Product.objects.filter(is_trending=True)[:4]
@@ -31,8 +31,29 @@ def index(request):
         'top_rated': top_rated,
         'deal_of_the_day': dotd,
         'new_products': new_products,
-        'best_sellers': best_sellers,
+        'best_sellers': best_sellers
     })
+
+
+# Fulltext search
+@login_required(login_url='/login/')
+def search_results(request):
+    search = request.GET.get('search', '').strip() 
+    
+    results = []
+    if search:
+        vector = SearchVector('name', weight='A') + SearchVector('description', weight='B') + SearchVector('category__name', weight='C')
+        query = SearchQuery(search)
+        
+        results = Product.objects.annotate(
+            rank=SearchRank(vector, query)
+        ).filter(rank__gte=0.0).order_by('-rank')
+    
+    return render(request, 'search_results.html', {
+        'results': results,
+        'search': search,
+    })
+
 
 
 def login_page(request):
