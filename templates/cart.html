@@ -1,68 +1,96 @@
 <!-- Tailwind CSS CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 
-<section class="min-h-screen bg-gray-50 py-10">
+<section class="min-h-screen bg-pink-50 py-10">
   <div class="container mx-auto px-4">
-    <h2 class="text-3xl font-semibold mb-8 text-center">Your Cart</h2>
+    <h2 class="text-3xl font-semibold text-center mb-8 text-gray-800">🛒 Your Cart</h2>
 
-    <div class="overflow-x-auto bg-white shadow rounded-xl p-6">
+    <div class="bg-white rounded-2xl shadow-lg p-6 overflow-x-auto">
 
       <table class="w-full table-auto text-left">
         <thead>
-          <tr class="text-gray-600 uppercase text-sm border-b">
+          <tr class="text-sm text-gray-500 border-b uppercase tracking-wide">
             <th class="pb-3">Product</th>
-            <th class="pb-3">Quantity</th>
+            <th class="pb-3 text-center">Quantity</th>
             <th class="pb-3">Price</th>
             <th class="pb-3">Remove</th>
           </tr>
         </thead>
         <tbody>
           {% for item in cart_items %}
-          <tr class="border-b hover:bg-gray-100">
-            <td class="py-4 flex items-center gap-4">
-              <img src="{{ item.product.image.url }}" class="w-16 h-16 object-cover rounded" alt="{{ item.product.name }}">
-              <span class="font-medium">{{ item.product.name }}</span>
+          <tr class="border-b hover:bg-pink-50 transition-all duration-150">
+            <!-- Product -->
+            <td class="py-5 flex items-center gap-4">
+              <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 rounded-xl object-cover">
+              <span class="font-medium text-gray-800">{{ item.product.name }}</span>
             </td>
 
-            <!-- Quantity Update Form -->
-            <td class="py-4">
-              <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}" class="inline-block">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="decrease">
-                <button type="submit" class="px-2 py-1 bg-gray-200 rounded">−</button>
-              </form>
+            <!-- Quantity Controls -->
+            <td class="py-5">
+              <div class="flex items-center justify-center gap-2 min-w-[120px]">
+                
+                <!-- Decrease Button -->
+                <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="decrease">
+                  <button type="submit"
+                    class="w-8 h-8 flex items-center justify-center bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full leading-none">
+                    −
+                  </button>
+                </form>
 
-              <span class="px-2">{{ item.quantity }}</span>
+                <!-- Quantity Display -->
+                <div class="flex items-center justify-center w-8 h-8 text-lg font-semibold text-gray-700 leading-none select-none">
+                  {{ item.quantity }}
+                </div>
 
-              <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}" class="inline-block">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="increase">
-                <button type="submit" class="px-2 py-1 bg-gray-200 rounded">+</button>
-              </form>
+                <!-- Increase Button -->
+                <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="increase">
+                  <button type="submit"
+                    class="w-8 h-8 flex items-center justify-center bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full leading-none">
+                    +
+                  </button>
+                </form>
+
+              </div>
             </td>
 
 
-            <td class="py-4 font-semibold text-green-600">₹{{ item.subtotal }}</td>
-            <td class="py-4">
-              <a href="{% url 'remove_from_cart' item.product.id %}" class="text-red-500 hover:underline">Remove</a>
+
+            <!-- Subtotal -->
+            <td class="py-5 font-semibold text-green-600 text-base">
+              ₹{{ item.subtotal }}
+            </td>
+
+            <!-- Remove Link -->
+            <td class="py-5">
+              <a href="{% url 'remove_from_cart' item.product.id %}" class="text-red-500 hover:underline text-sm">Remove</a>
             </td>
           </tr>
           {% empty %}
           <tr>
-            <td colspan="4" class="text-center py-6 text-gray-500">Your cart is empty.</td>
+            <td colspan="4" class="text-center py-6 text-gray-400">Your cart is empty.</td>
           </tr>
           {% endfor %}
         </tbody>
+
+        <!-- Total -->
         <tfoot>
           <tr class="font-bold text-lg border-t">
-            <td colspan="2" class="py-4 text-right">Total:</td>
-            <td colspan="2" class="py-4 text-green-700">${{ total_price }}</td>
+            <td colspan="2" class="py-5 text-right text-gray-700">Total:</td>
+            <td colspan="2" class="py-5 text-green-700">₹{{ total_price }}</td>
           </tr>
         </tfoot>
       </table>
 
+      <!-- Checkout Button -->
       <div class="flex justify-end mt-6">
-        <a href="#" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Checkout</a>
+        <a href="#"
+          class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-3 rounded-full shadow-md transition duration-200">
+          Proceed to Checkout
+        </a>
       </div>
     </div>
   </div>
