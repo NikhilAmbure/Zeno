@@ -1,7 +1,26 @@
 <!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cart</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}" type="image/x-icon">
+</head>
+
+
 
 <section class="min-h-screen bg-pink-50 py-10">
+
+  <div class="ml-4 mb-6">
+    <a href="{% url 'index' %}" 
+      class=" inline-flex items-center gap-2 text-base font-medium text-white bg-pink-500 hover:bg-pink-600 px-4 py-2 rounded-full shadow-md transition duration-200">
+      ← Home
+    </a>
+  </div>
+  
   <div class="container mx-auto px-4">
     <h2 class="text-3xl font-semibold text-center mb-8 text-gray-800">🛒 Your Cart</h2>
 
@@ -80,21 +99,39 @@
         <tfoot>
           <tr class="font-bold text-lg border-t">
             <td colspan="2" class="py-5 text-right text-gray-700">Total:</td>
-            <td colspan="2" class="py-5 text-green-700">₹{{ total_price }}</td>
+            <td colspan="2" class="py-5 text-green-700">${{ total_price }}</td>
           </tr>
         </tfoot>
       </table>
 
       <!-- Checkout Button -->
       <div class="flex justify-end mt-6">
-        <a href="#"
+        <a href="{% url 'checkout' %}"
           class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-3 rounded-full shadow-md transition duration-200">
           Proceed to Checkout
         </a>
       </div>
     </div>
   </div>
+
+  
+
 </section>
+
+{% if messages %}
+  <div id="toast-message" class="fixed top-5 left-5 bg-green-500 text-white px-4 py-2 rounded shadow-lg text-sm z-50">
+    {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+  </div>
+
+  <script>
+    setTimeout(() => {
+      const toast = document.getElementById('toast-message');
+      if (toast) toast.style.display = 'none';
+    }, 2000);  // Hide after 2 seconds
+  </script>
+{% endif %}
 
 <script>
   history.replaceState(null, '', location.href);

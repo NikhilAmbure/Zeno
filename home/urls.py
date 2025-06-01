@@ -19,5 +19,10 @@ urlpatterns = [
     path('edit-profile/', edit_profile_view, name='edit-profile'),
     path('product/<int:pk>/', product_detail, name='product_detail'),
 
-    path('search/', search_results, name='search_results')
+    path('search/', search_results, name='search_results'),
+    path('checkout/', checkout_page, name='checkout'),
+    path('select-payment-method/', select_payment_method, name='select_payment_method'),
+    path('razorpay-payment/', razorpay_payment, name='razorpay-payment'),
+    path('place-order-cod/', place_order_cod, name='place-order-cod'),
+
 ]

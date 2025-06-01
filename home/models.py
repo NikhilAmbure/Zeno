@@ -92,15 +92,28 @@ class CartItem(models.Model):
 
 
 
+# models.py
 
-# # Order Model
-# class Order(models.Model):
-#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='orders')
-#     product_name = models.CharField(max_length=255)
-#     quantity = models.PositiveIntegerField(default=1)
-#     price = models.DecimalField(max_digits=10, decimal_places=2)
-#     ordered_at = models.DateTimeField(auto_now_add=True)
-#     status = models.CharField(max_length=50, default='pending')
+class Order(models.Model):
+    PAYMENT_CHOICES = (
+        ('RAZORPAY', 'Razorpay'),
+        ('COD', 'Cash On Delivery'),
+    )
 
-#     def __str__(self):
-#         return f"Order {self.id} by {self.user.email}"
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='orders')
+
+    # To save delivery info even if user changes it later
+    name = models.CharField(max_length=100, default='Unknown')
+    email = models.EmailField(default="unknown@example.com")
+    phone = models.CharField(max_length=20, default="0000000000000000")
+    address = models.TextField(default='Not Provided')
+
+    items = models.ManyToManyField(CartItem)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES)
+    is_paid = models.BooleanField(default=False)
+    ordered_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50, default='pending')
+
+    def __str__(self):
+        return f"Order {self.id} by {self.user.email}"

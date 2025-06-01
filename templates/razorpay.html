@@ -1,0 +1,49 @@
+<!-- templates/razorpay_payment.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Razorpay Payment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex justify-center items-center">
+    <div class="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
+        <h1 class="text-2xl font-bold mb-6">Complete Your Payment</h1>
+        <p class="text-lg mb-4">Total Amount: ₹{{ total_price }}</p>
+
+        <button id="payBtn" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+            Pay with Razorpay
+        </button>
+    </div>
+
+    <script>
+        document.getElementById('payBtn').onclick = function(e) {
+            e.preventDefault();
+
+            const options = {
+                "key": "rzp_test_YourTestKeyHere", // Replace with your Razorpay test key
+                "amount": {{ total_price|floatformat:2|floatformat:"0" }} * 100, // amount in paise
+                "currency": "INR",
+                "name": "Your Store",
+                "description": "Purchase Products",
+                "handler": function (response){
+                    alert("Payment successful. Payment ID: " + response.razorpay_payment_id);
+                    // Optionally make AJAX call to backend to verify payment and place order
+                    window.location.href = "/order-success/";
+                },
+                "prefill": {
+                    "name": "{{ request.user.get_full_name }}",
+                    "email": "{{ request.user.email }}"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+        }
+    </script>
+</body>
+</html>

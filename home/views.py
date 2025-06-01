@@ -5,9 +5,10 @@ from .emailer import sendOTPToEmail
 import random
 from django.contrib.auth import get_user_model, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser, Product, CartItem
+from .models import CustomUser, Product, CartItem, Order
 from django.contrib.postgres.search import (SearchQuery, SearchVector, SearchRank, TrigramSimilarity)
 from django.db.models import Q
+from decimal import Decimal
 
 # Gets the custom user model
 User = get_user_model()
@@ -159,26 +160,32 @@ def enter_otp_page(request, user_id):
 
 
 # To show the cart items
-
-def cart_view(request):
-    cart = request.session.get('cart', {})
-    products = Product.objects.filter(id__in=cart.keys())
-
+def cart_view(request): 
     cart_items = []
     total_price = 0
+
+    # Always use session-based cart
+    cart = request.session.get('cart', {})
+    print("Session cart content:", cart)
+
+    product_ids = [int(pid) for pid in cart.keys() if pid.isdigit()]
+    products = Product.objects.filter(id__in=product_ids)
+
     for product in products:
-        quantity = cart[str(product.id)]
-        total_price += product.price * quantity
+        quantity = cart.get(str(product.id), 0)
+        subtotal = product.price * quantity
+        total_price += subtotal
         cart_items.append({
             'product': product,
             'quantity': quantity,
-            'subtotal': product.price * quantity
+            'subtotal': subtotal,
         })
 
     context = {
         'cart_items': cart_items,
-        'total_price': total_price
+        'total_price': total_price,
     }
+
     return render(request, 'cart.html', context)
 
 
@@ -196,6 +203,7 @@ def edit_profile_view(request):
         if request.FILES.get('profile'):
             user.profile_picture = request.FILES['profile']
         print("Logged in user:", request.user.email)
+        user.name = request.POST.get('name')
         user.username = request.POST.get('username')
         user.phone = request.POST.get('phone')
         user.location = request.POST.get('location')
@@ -204,6 +212,7 @@ def edit_profile_view(request):
         messages.success(request, 'Profile updated successfully!')
         return redirect('edit-profile')
 
+    user = User.objects.get(pk=request.user.pk)
     return render(request, 'edit_profile.html', {'user': user})
 
 
@@ -260,11 +269,105 @@ def update_cart_quantity(request, product_id):
                 cart[product_id_str] += 1
             elif action == 'decrease':
                 if cart[product_id_str] > 1:
-                    cart[product_id_str] -= 1
-                else:
-                    del cart[product_id_str]
+                    cart[str(product_id)] = max(cart[str(product_id)] - 1, 1)
 
         request.session['cart'] = cart
         request.session.modified = True
+        messages.success(request, "Cart updated!")
+        return redirect('cart')
 
-    return redirect('cart')
+
+# 1st
+@login_required(login_url='/login/')
+def checkout_page(request):
+    cart = request.session.get('cart', {})
+    # print("Checkout cart content:", cart)
+    # print("Cart keys:", list(cart.keys()))
+
+    if not cart:
+        messages.error(request, 'Your cart is empty. Please add items to proceed to checkout.')
+        return redirect('cart')
+
+    products = Product.objects.filter(id__in = cart.keys())
+
+    total_price = Decimal('0.00')
+    cart_items = []
+
+    for product in products:
+        quantity = cart[str(product.id)]
+        subtotal = product.price * quantity
+        total_price += subtotal
+        cart_items.append({
+            'product': product,
+            'quantity': quantity,
+            'subtotal': subtotal
+        })
+
+    # Add GST (18%)
+    gst_rate = Decimal('0.18')
+    gst_amount = (total_price * gst_rate).quantize(Decimal('0.01'))  # round to 2 decimal places
+    total_with_gst = total_price + gst_amount
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        address = request.POST.get('address')
+
+        # Clearing old CartItems for this user
+        CartItem.objects.filter(user=request.user).delete()
+
+        # Save cart items into database as CartItem objects
+        saved_items = []
+        for item in cart_items:
+            cart_item = CartItem.objects.create(
+                user = request.user,
+                product = item['product'],
+                quantity = item['quantity']
+            )
+            saved_items.append(cart_item)
+
+        # Create order
+        order = Order.objects.create(
+            user = request.user,
+            total_price = total_with_gst,
+            payment_method = 'COD', #Temporary is COD
+            is_paid = False,
+            name = name,
+            email = email,
+            phone = phone,
+            address = address
+        )
+
+        order.items.set(saved_items)
+        order.save()
+
+
+        # Clearing the cart after order creation
+        request.session['cart'] = {}
+        request.session.modified = True
+
+        # Redirect to payment selection page
+        request.session['order_id'] = order.id # Save order id for payment  # For generating the receipt later
+        return redirect('select_payment_method')
+    
+
+    return render(request, 'checkout.html', {
+        'cart_items': cart_items,
+        'total_price': total_price,
+        'gst_amount': gst_amount,
+        'total_with_gst': total_with_gst,
+        'user_profile': request.user # To prefill the user details in form
+    })
+
+
+
+def select_payment_method(request):
+    return render(request, 'select_payment_method.html')
+
+
+def razorpay_payment(request):
+    return render(request, 'razorpay.html')
+
+def place_order_cod(request):
+    return redirect('index')

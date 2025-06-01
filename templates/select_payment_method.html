@@ -1,0 +1,31 @@
+<!-- templates/select_payment_method.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Payment Method</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex justify-center items-center">
+    <div class="bg-white p-8 rounded shadow-md w-full max-w-md">
+        <h1 class="text-2xl font-bold mb-6 text-center">Choose Payment Method</h1>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <label class="flex items-center space-x-3">
+                    <input type="radio" name="payment_method" value="RAZORPAY" required class="h-5 w-5 text-blue-600">
+                    <span class="text-gray-700">Pay with Razorpay</span>
+                </label>
+                <label class="flex items-center space-x-3">
+                    <input type="radio" name="payment_method" value="COD" required class="h-5 w-5 text-blue-600">
+                    <span class="text-gray-700">Cash on Delivery</span>
+                </label>
+            </div>
+            <button type="submit" class="mt-6 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">
+                Continue
+            </button>
+        </form>
+    </div>
+</body>
+</html>
