@@ -34,6 +34,8 @@ const mobileMenuOpenBtn = document.querySelectorAll('[data-mobile-menu-open-btn]
 const mobileMenu = document.querySelectorAll('[data-mobile-menu]');
 const mobileMenuCloseBtn = document.querySelectorAll('[data-mobile-menu-close-btn]');
 const overlay = document.querySelector('[data-overlay]');
+const accordionBtn = document.querySelectorAll('[data-accordion-btn]');
+const accordion = document.querySelectorAll('[data-accordion]');
 
 for (let i = 0; i < accordionBtn.length; i++) {
 

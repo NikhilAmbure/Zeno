@@ -99,7 +99,6 @@ def logout(request):
     auth_logout(request)
     return redirect('/login/')
 
-
 def register_page(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -129,7 +128,6 @@ def register_page(request):
         
     return render(request, 'register.html')
 
-
 def enter_otp_page(request, user_id):
 
     if request.method == 'POST':
@@ -156,8 +154,6 @@ def enter_otp_page(request, user_id):
     
 
     return render(request, 'enter_otp.html')
-
-
 
 # To show the cart items
 def cart_view(request): 
@@ -188,10 +184,8 @@ def cart_view(request):
 
     return render(request, 'cart.html', context)
 
-
 def wishlist_view(request):
     return render(request, 'wishlist.html')
-
 
 @login_required(login_url='/login/')
 def edit_profile_view(request):
@@ -215,12 +209,9 @@ def edit_profile_view(request):
     user = User.objects.get(pk=request.user.pk)
     return render(request, 'edit_profile.html', {'user': user})
 
-
-
 def product_detail(request, pk):
     product = get_object_or_404(Product, pk=pk)
     return render(request, 'product_detail.html', {'product': product})
-
 
 # To add the items into cart
 def add_to_cart(request, product_id):
