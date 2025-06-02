@@ -5,7 +5,7 @@ from .emailer import sendOTPToEmail
 import random
 from django.contrib.auth import get_user_model, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser, Product, CartItem, Order
+from .models import CustomUser, Product, CartItem, Order, WishlistItem
 from django.contrib.postgres.search import (SearchQuery, SearchVector, SearchRank, TrigramSimilarity)
 from django.db.models import Q
 from decimal import Decimal
@@ -85,7 +85,7 @@ def login_page(request):
             return redirect('/login/')
         
         email = user_obj[0].email
-        otp = random.randint(0000, 9999)
+        otp = random.randint(1000, 9999)
         user_obj.update(otp = otp)
         subject = "OTP for login"
         message = f'Your OTP is {otp}'
@@ -184,8 +184,50 @@ def cart_view(request):
 
     return render(request, 'cart.html', context)
 
+# WishList Logic
+@login_required(login_url='/login/')
 def wishlist_view(request):
-    return render(request, 'wishlist.html')
+    wishlist_items = WishlistItem.objects.filter(user=request.user)
+    return render(request, 'wishlist.html', {
+        'wishlist_items': wishlist_items
+    })
+
+@login_required(login_url='/login/')
+def add_to_wishlist(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    WishlistItem.objects.get_or_create(user=request.user, product=product)
+    messages.success(request, "Added to wishlist.")
+    return redirect(request.META.get('HTTP_REFERER', 'index'))
+
+@login_required(login_url='/login/')
+def remove_from_wishlist(request, item_id):
+    WishlistItem.objects.filter(id=item_id, user=request.user).delete()
+    messages.success(request, "Removed from wishlist.")
+    return redirect('wishlist')
+
+@login_required(login_url='/login/')
+def move_to_cart(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    # Remove from wishlist
+    WishlistItem.objects.filter(product=product, user=request.user).delete()
+    # Add to cart
+    cart_item, created = CartItem.objects.get_or_create(user=request.user, product=product)
+    if not created:
+        cart_item.quantity += 1
+        cart_item.save()
+    messages.success(request, "Moved to cart.")
+    return redirect('wishlist')
+
+@login_required(login_url='/login/')
+def clear_wishlist(request):
+    WishlistItem.objects.filter(user=request.user).delete()
+    messages.success(request, "Wishlist cleared.")
+    return redirect('wishlist')
+
+def wishlist_count(request):
+    count = WishlistItem.get_count(request.user)
+    return {'wishlist_count': count}
+
 
 @login_required(login_url='/login/')
 def edit_profile_view(request):

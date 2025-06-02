@@ -2,9 +2,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>{{ product.name }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}" type="image/x-icon">
+
 </head>
 <body class="bg-gradient-to-br from-pink-50 to-gray-100 min-h-screen">
 
@@ -18,44 +20,54 @@
     </a>
   </div>
 
-  <!-- Product Card -->
-  <div class="flex items-center justify-center px-4 py-16">
-    <div class="max-w-6xl w-full bg-white rounded-3xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-10 p-6 md:p-12">
+  <!-- Product Card (Smaller) -->
+  <div class="flex items-center justify-center px-4 py-12">
+    <div class="max-w-4xl w-full bg-white rounded-2xl shadow-lg overflow-hidden grid grid-cols-1 md:grid-cols-2 gap-8 p-5 md:p-8">
 
       <!-- Image -->
       <div class="w-full h-full">
         <img src="{{ product.image.url }}" alt="{{ product.name }}"
-             class="w-full h-full max-h-[550px] object-cover rounded-2xl shadow-md hover:scale-105 transition-transform duration-300">
+             class="w-full h-full max-h-[400px] object-cover rounded-xl shadow-md hover:scale-105 transition-transform duration-300" />
       </div>
 
       <!-- Content -->
       <div class="flex flex-col justify-between">
         <div>
-          <h1 class="text-4xl font-extrabold text-gray-900 mb-2">{{ product.name }}</h1>
+          <h1 class="text-3xl font-extrabold text-gray-900 mb-2">{{ product.name }}</h1>
 
           <p class="text-sm text-gray-500 mb-1">
             Category:
             <span class="font-semibold text-black">{{ product.category.name }}</span>
           </p>
 
-          <p class="text-gray-700 text-base leading-relaxed my-4">{{ product.description }}</p>
+          <p class="text-gray-700 text-base leading-relaxed my-3">{{ product.description }}</p>
 
-          <div class="price-box text-3xl font-bold text-[#FA8072] flex items-center gap-3 mb-8">
+          <div class="price-box text-2xl font-bold text-[#FA8072] flex items-center gap-3 mb-6">
             ${{ product.price }}
             {% if product.old_price %}
-              <del class="text-gray-400 text-xl">${{ product.old_price }}</del>
+              <del class="text-gray-400 text-lg">${{ product.old_price }}</del>
             {% endif %}
           </div>
         </div>
 
-        <!-- Add to Cart -->
-        <form method="post" action="{% url 'add_to_cart' product.id %}">
-          {% csrf_token %}
-          <button type="submit"
-                  class="w-full bg-[#FA8072] text-black font-semibold py-3 rounded-xl text-lg transition duration-300 hover:bg-black hover:text-white shadow-md hover:shadow-xl">
-            Add to Cart
-          </button>
-        </form>
+        <!-- Buttons: Add to Cart + Add to Wishlist -->
+        <div class="flex gap-4">
+          <form method="post" action="{% url 'add_to_cart' product.id %}" class="flex-1">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full bg-[#FA8072] text-black font-semibold py-3 rounded-xl text-lg transition duration-300 hover:bg-black hover:text-white shadow-md hover:shadow-xl">
+              Add to Cart
+            </button>
+          </form>
+
+          <form method="post" action="{% url 'add_to_wishlist' product.id %}" class="flex-1">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full border-2 border-[#FA8072] text-[#FA8072] font-semibold py-3 rounded-xl text-lg transition duration-300 hover:bg-[#FA8072] hover:text-white shadow-md hover:shadow-xl">
+              Add to Wishlist
+            </button>
+          </form>
+        </div>
       </div>
 
     </div>

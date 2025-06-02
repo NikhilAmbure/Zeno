@@ -1,74 +1,106 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <title>Login | E-Commerce</title>
-
-  <!--
-    - favicon
-  -->
-  <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}"" type="image/x-icon">
-
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login | E-Commerce</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}" type="image/x-icon" />
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-pink-50">
 
-    
+  <section class="min-h-screen flex items-center justify-center py-4 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6 space-y-4">
 
-    <div class="w-full max-w-md bg-white rounded-xl shadow-md p-8 space-y-6">
-        
-        <div class="flex justify-center mb-6">
-            <img src="{% static 'assets/images/logo/favicon.svg' %}" alt="Zeno Logo" class="h-10">
+      <!-- Logo -->
+      <div class="flex justify-center mb-4">
+        <img src="{% static 'assets/images/logo/favicon.svg' %}" alt="Zeno Logo" class="h-10" />
+      </div>
+
+      <!-- Heading -->
+      <div class="text-center">
+        <h2 class="text-2xl font-semibold text-pink-600 mb-1">Welcome Back</h2>
+        <p class="text-gray-600 text-sm">Please login to your account</p>
+      </div>
+
+      <!-- Form -->
+      <form method="post" action="{% url 'login' %}" class="space-y-4">
+        {% csrf_token %}
+
+        {% if messages %}
+        <ul class="mb-3">
+          {% for message in messages %}
+          <li class="text-xs text-red-600 font-medium mb-1">{{ message }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+
+        <div>
+          <label for="email" class="block mb-1 text-sm font-medium text-gray-700">Email</label>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            required
+            class="w-full rounded-xl border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-pink-400"
+          />
         </div>
-        
-        <div class="text-center">
-            <h2 class="text-2xl font-bold text-gray-800">Welcome Back</h2>
-            <p class="text-sm text-gray-500">Please login to your account</p>
+
+        <div>
+          <label for="password" class="block mb-1 text-sm font-medium text-gray-700">Password</label>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            required
+            class="w-full rounded-xl border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-pink-400"
+          />
         </div>
 
-        <form method="post" action="{% url 'login' %}" class="space-y-4">
+        <div class="flex items-center justify-between text-xs text-gray-600">
+          <label class="flex items-center gap-2">
+            <input type="checkbox" class="form-checkbox text-pink-500" />
+            Remember me
+          </label>
+          <a href="#" class="text-pink-600 hover:underline">Forgot password?</a>
+        </div>
 
-            {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                {% endfor %}
-            </ul>
-            {% endif %}
+        <button
+          type="submit"
+          class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded-xl shadow-md transition duration-200"
+        >
+          Login
+        </button>
+      </form>
 
-            {% csrf_token %}
-            <div>
-                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-                <input type="email" name="email" id="email" required
-                    class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                <input type="password" name="password" id="password" required
-                    class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-
-            <div class="flex items-center justify-between text-sm">
-                <label class="flex items-center">
-                    <input type="checkbox" class="form-checkbox text-blue-600">
-                    <span class="ml-2 text-gray-600">Remember me</span>
-                </label>
-                <a href="#" class="text-blue-600 hover:underline">Forgot password?</a>
-            </div>
-
-            <button type="submit"
-                class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition duration-200">
-                Login
-            </button>
-        </form>
-
-        <p class="text-center text-sm text-gray-600">
-            Don't have an account?
-            <a href="{% url 'register' %}" class="text-blue-600 hover:underline">Sign up</a>
-        </p> 
+      <p class="text-center text-gray-600 text-xs">
+        Don't have an account?
+        <a href="{% url 'register' %}" class="text-pink-600 font-semibold hover:underline">Sign up</a>
+      </p>
     </div>
+  </section>
+
+  <!-- Toast Message -->
+  {% if messages %}
+  <div id="toast-message" class="fixed top-5 left-5 bg-green-500 text-white px-3 py-1 rounded shadow-lg text-xs z-50">
+    {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+  </div>
+
+  <script>
+    setTimeout(() => {
+      const toast = document.getElementById('toast-message');
+      if (toast) toast.style.display = 'none';
+    }, 2000);
+  </script>
+  {% endif %}
+
+  <!-- Prevent form resubmission on refresh -->
+  <script>
+    history.replaceState(null, '', location.href);
+  </script>
 
 </body>
 </html>

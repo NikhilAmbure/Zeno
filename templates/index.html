@@ -242,6 +242,7 @@
             </button>
             <div class="dropdown-content">
               <a href="{% url 'edit-profile' %}">Edit Profile</a>
+              <a href="#">My Orders</a>
               {% if user.is_authenticated %}
                 <a href="{% url 'logout' %}">Logout</a>
               {% else %}
@@ -252,7 +253,7 @@
 
           <a href="{% url 'wishlist' %}" class="action-btn">
             <ion-icon name="heart-outline"></ion-icon>
-            <span class="count">0</span>
+            <span class="count">{{ wishlist_count }}</span>
           </a>
 
           {% comment %} ************Showing cart count on icon************ {% endcomment %}
@@ -1804,9 +1805,12 @@
 
                   <div class="showcase-actions">
 
-                    <button class="btn-action">
-                      <ion-icon name="heart-outline"></ion-icon>
-                    </button>
+                    <form method="POST" action="{% url 'add_to_wishlist' product.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn-action" title="Add to Wishlist">
+                        <ion-icon name="heart-outline"></ion-icon>
+                      </button>
+                    </form>
 
                     <!-- Add to Cart Button wrapped in a form -->
                     <form method="POST" action="{% url 'add_to_cart' product.id %}">
