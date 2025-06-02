@@ -10,22 +10,27 @@
   <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}" type="image/x-icon">
 </head>
 
+<body class="bg-pink-50">
+<section class="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
 
-
-<section class="min-h-screen bg-pink-50 py-10">
-
-  <div class="ml-4 mb-6">
+  <!-- Home Link -->
+  <div class="mb-6">
     <a href="{% url 'index' %}" 
-      class=" inline-flex items-center gap-2 text-base font-medium text-white bg-pink-500 hover:bg-pink-600 px-4 py-2 rounded-full shadow-md transition duration-200">
+      class="inline-flex items-center gap-2 text-sm sm:text-base font-medium text-white bg-pink-500 hover:bg-pink-600 px-4 py-2 rounded-full shadow-md transition duration-200">
       ← Home
     </a>
   </div>
   
-  <div class="container mx-auto px-4">
-    <h2 class="text-3xl font-semibold text-center mb-8 text-gray-800">🛒 Your Cart</h2>
+  <!-- Heading -->
+  <div class="text-center mb-8">
+    <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800">🛒 Your Cart</h2>
+  </div>
 
-    <div class="bg-white rounded-2xl shadow-lg p-6 overflow-x-auto">
+  <!-- Cart Table Wrapper -->
+  <div class="bg-white rounded-2xl shadow-lg p-4 sm:p-6 overflow-x-auto">
 
+    <!-- Table for md+ screens -->
+    <div class="hidden md:block">
       <table class="w-full table-auto text-left">
         <thead>
           <tr class="text-sm text-gray-500 border-b uppercase tracking-wide">
@@ -38,52 +43,28 @@
         <tbody>
           {% for item in cart_items %}
           <tr class="border-b hover:bg-pink-50 transition-all duration-150">
-            <!-- Product -->
             <td class="py-5 flex items-center gap-4">
               <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 rounded-xl object-cover">
               <span class="font-medium text-gray-800">{{ item.product.name }}</span>
             </td>
-
-            <!-- Quantity Controls -->
             <td class="py-5">
               <div class="flex items-center justify-center gap-2 min-w-[120px]">
-                
-                <!-- Decrease Button -->
+                <!-- Decrease -->
                 <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
                   {% csrf_token %}
                   <input type="hidden" name="action" value="decrease">
-                  <button type="submit"
-                    class="w-8 h-8 flex items-center justify-center bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full leading-none">
-                    −
-                  </button>
+                  <button type="submit" class="w-8 h-8 bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full">−</button>
                 </form>
-
-                <!-- Quantity Display -->
-                <div class="flex items-center justify-center w-8 h-8 text-lg font-semibold text-gray-700 leading-none select-none">
-                  {{ item.quantity }}
-                </div>
-
-                <!-- Increase Button -->
+                <div class="text-lg font-semibold text-gray-700">{{ item.quantity }}</div>
+                <!-- Increase -->
                 <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
                   {% csrf_token %}
                   <input type="hidden" name="action" value="increase">
-                  <button type="submit"
-                    class="w-8 h-8 flex items-center justify-center bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full leading-none">
-                    +
-                  </button>
+                  <button type="submit" class="w-8 h-8 bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full">+</button>
                 </form>
-
               </div>
             </td>
-
-
-
-            <!-- Subtotal -->
-            <td class="py-5 font-semibold text-green-600 text-base">
-              ₹{{ item.subtotal }}
-            </td>
-
-            <!-- Remove Link -->
+            <td class="py-5 font-semibold text-green-600 text-base">₹{{ item.subtotal }}</td>
             <td class="py-5">
               <a href="{% url 'remove_from_cart' item.product.id %}" class="text-red-500 hover:underline text-sm">Remove</a>
             </td>
@@ -94,45 +75,86 @@
           </tr>
           {% endfor %}
         </tbody>
-
-        <!-- Total -->
         <tfoot>
           <tr class="font-bold text-lg border-t">
             <td colspan="2" class="py-5 text-right text-gray-700">Total:</td>
-            <td colspan="2" class="py-5 text-green-700">${{ total_price }}</td>
+            <td colspan="2" class="py-5 text-green-700">₹{{ total_price }}</td>
           </tr>
         </tfoot>
       </table>
+    </div>
 
-      <!-- Checkout Button -->
-      <div class="flex justify-end mt-6">
-        <a href="{% url 'checkout' %}"
-          class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-3 rounded-full shadow-md transition duration-200">
-          Proceed to Checkout
-        </a>
+    <!-- Mobile-friendly layout -->
+    <div class="md:hidden space-y-6">
+      {% for item in cart_items %}
+      <div class="border rounded-xl p-4 bg-pink-50 shadow-sm">
+        <div class="flex items-center gap-4 mb-3">
+          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 rounded-xl object-cover">
+          <div>
+            <h3 class="text-base font-semibold text-gray-800">{{ item.product.name }}</h3>
+            <p class="text-sm text-green-600 font-bold">₹{{ item.subtotal }}</p>
+          </div>
+        </div>
+        <div class="flex justify-between items-center">
+          <!-- Quantity Controls -->
+          <div class="flex items-center gap-2">
+            <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="decrease">
+              <button type="submit" class="w-8 h-8 bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full">−</button>
+            </form>
+            <span class="text-lg font-medium text-gray-700">{{ item.quantity }}</span>
+            <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="increase">
+              <button type="submit" class="w-8 h-8 bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full">+</button>
+            </form>
+          </div>
+          <!-- Remove -->
+          <a href="{% url 'remove_from_cart' item.product.id %}" class="text-red-500 text-sm hover:underline">Remove</a>
+        </div>
+      </div>
+      {% empty %}
+      <p class="text-center text-gray-400">Your cart is empty.</p>
+      {% endfor %}
+
+      <!-- Total Price -->
+      <div class="text-right font-semibold text-lg text-gray-700 pt-2">
+        Total: <span class="text-green-700">₹{{ total_price }}</span>
       </div>
     </div>
-  </div>
 
-  
+    <!-- Checkout Button -->
+    {% if cart_items %}
+    <div class="flex justify-end mt-6">
+      <a href="{% url 'checkout' %}" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-3 rounded-full shadow-md transition duration-200">
+        Proceed to Checkout
+      </a>
+    </div>
+    {% endif %}
+  </div>
 
 </section>
 
+<!-- Toast Message -->
 {% if messages %}
-  <div id="toast-message" class="fixed top-5 left-5 bg-green-500 text-white px-4 py-2 rounded shadow-lg text-sm z-50">
-    {% for message in messages %}
-      {{ message }}
-    {% endfor %}
-  </div>
+<div id="toast-message" class="fixed top-5 left-5 bg-green-500 text-white px-4 py-2 rounded shadow-lg text-sm z-50">
+  {% for message in messages %}
+    {{ message }}
+  {% endfor %}
+</div>
 
-  <script>
-    setTimeout(() => {
-      const toast = document.getElementById('toast-message');
-      if (toast) toast.style.display = 'none';
-    }, 2000);  // Hide after 2 seconds
-  </script>
+<script>
+  setTimeout(() => {
+    const toast = document.getElementById('toast-message');
+    if (toast) toast.style.display = 'none';
+  }, 2000);
+</script>
 {% endif %}
 
+<!-- Prevent form resubmission on refresh -->
 <script>
   history.replaceState(null, '', location.href);
 </script>
+</body>
+</html>

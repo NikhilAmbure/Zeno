@@ -277,7 +277,7 @@
         <ul class="desktop-menu-category-list">
 
           <li class="menu-category">
-            <a href="#" class="menu-title">Home</a>
+            <a href="{% url 'index' %}" class="menu-title">Home</a>
           </li>
 
           <li class="menu-category">
@@ -292,23 +292,23 @@
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Desktop</a>
+                  <a href="{% url 'search_results' %}?search=Desktop">Desktop</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Laptop</a>
+                  <a href="{% url 'search_results' %}?search=Laptop">Laptop</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Camera</a>
+                  <a href="{% url 'search_results' %}?search=Camera">Camera</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Tablet</a>
+                  <a href="{% url 'search_results' %}?search=Tablet">Tablet</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Headphone</a>
+                  <a href="Headphone">Headphone</a>
                 </li>
 
                 <li class="panel-list-item">
@@ -327,23 +327,23 @@
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Formal</a>
+                  <a href="{% url 'search_results' %}?search=Formal">Formal</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Casual</a>
+                  <a href="{% url 'search_results' %}?search=Casual">Casual</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Sports</a>
+                  <a href="{% url 'search_results' %}?search=Sports">Sports</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Jacket</a>
+                  <a href="{% url 'search_results' %}?search=Jacket">Jacket</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Sunglasses</a>
+                  <a href="{% url 'search_results' %}?search=Sunglasses">Sunglasses</a>
                 </li>
 
                 <li class="panel-list-item">
@@ -361,23 +361,23 @@
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Formal</a>
+                  <a href="{% url 'search_results' %}?search=Formal">Formal</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Casual</a>
+                  <a href="{% url 'search_results' %}?search=Casual">Casual</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Perfume</a>
+                  <a href="{% url 'search_results' %}?search=Perfume">Perfume</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Cosmetics</a>
+                  <a href="{% url 'search_results' %}?search=Cosmetics">Cosmetics</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Bags</a>
+                  <a href="{% url 'search_results' %}?search=Bags">Bags</a>
                 </li>
 
                 <li class="panel-list-item">
@@ -395,23 +395,23 @@
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Smart Watch</a>
+                  <a href="{% url 'search_results' %}?search={{ 'Smart Watch'|urlencode }}">Smart Watch</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Smart TV</a>
+                  <a href="{% url 'search_results' %}?search={{ 'Smart Tv'|urlencode }}">Smart TV</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Keyboard</a>
+                  <a href="{% url 'search_results' %}?search=Keyboard">Keyboard</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Mouse</a>
+                  <a href="{% url 'search_results' %}?search=Mouse">Mouse</a>
                 </li>
 
                 <li class="panel-list-item">
-                  <a href="#">Microphone</a>
+                  <a href="{% url 'search_results' %}?search=Microphone">Microphone</a>
                 </li>
 
                 <li class="panel-list-item">
@@ -431,19 +431,19 @@
             <ul class="dropdown-list">
 
               <li class="dropdown-item">
-                <a href="#">Shirt</a>
+                <a href="{% url 'search_results' %}?search=Shirt">Shirt</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Shorts & Jeans</a>
+                <a href="{% url 'search_results' %}?search={{ 'Shorts & Jeans'|urlencode }}">Shorts & Jeans</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Safety Shoes</a>
+                <a href="{% url 'search_results' %}?search={{ 'Safety Shoes'|urlencode }}">Safety Shoes</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Wallet</a>
+                <a href="{% url 'search_results' %}?search=Wallet">Wallet</a>
               </li>
 
             </ul>
@@ -455,19 +455,19 @@
             <ul class="dropdown-list">
 
               <li class="dropdown-item">
-                <a href="#">Dress & Frock</a>
+                <a href="{% url 'search_results' %}?search={{ 'Dress & Frock'|urlencode }}">Dress & Frock</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Earrings</a>
+                <a href="{% url 'search_results' %}?search=Earrings">Earrings</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Necklace</a>
+                <a href="{% url 'search_results' %}?search=Necklace">Necklace</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Makeup Kit</a>
+                <a href="{% url 'search_results' %}?search={{ 'Makeup Kit'|urlencode }}">Makeup Kit</a>
               </li>
 
             </ul>
@@ -479,19 +479,19 @@
             <ul class="dropdown-list">
 
               <li class="dropdown-item">
-                <a href="#">Earrings</a>
+                <a href="{% url 'search_results' %}?search=Earrings">Earrings</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Couple Rings</a>
+                <a href="{% url 'search_results' %}?search={{ 'Couple Rings'|urlencode }}">Couple Rings</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Necklace</a>
+                <a href="{% url 'search_results' %}?search=Necklace">Necklace</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Bracelets</a>
+                <a href="{% url 'search_results' %}?search=Bracelets">Bracelets</a>
               </li>
 
             </ul>
@@ -503,19 +503,19 @@
             <ul class="dropdown-list">
 
               <li class="dropdown-item">
-                <a href="#">Clothes Perfume</a>
+                <a href="{% url 'search_results' %}?search={{ 'Clothes Perfume'|urlencode }}">Clothes Perfume</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Deodorant</a>
+                <a href="{% url 'search_results' %}?search=Deodorant">Deodorant</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Flower Fragrance</a>
+                <a href="{% url 'search_results' %}?search={{ 'Flower Fragrance'|urlencode }}">Flower Fragrance</a>
               </li>
 
               <li class="dropdown-item">
-                <a href="#">Air Freshener</a>
+                <a href="{% url 'search_results' %}?search={{ 'Air Freshener'|urlencode }}">Air Freshener</a>
               </li>
 
             </ul>
@@ -541,25 +541,25 @@
         <ion-icon name="menu-outline"></ion-icon>
       </button>
 
-      <button class="action-btn">
+      <a href={% url 'cart' %} class="action-btn">
         <ion-icon name="bag-handle-outline"></ion-icon>
 
-        <span class="count">0</span>
-      </button>
+        <span class="count">{{ cart_count }}</span>
+      </a>
 
-      <button class="action-btn">
+      <a href='{% url 'index'%}' class="action-btn">
         <ion-icon name="home-outline"></ion-icon>
-      </button>
+      </a>
 
-      <button class="action-btn">
+      <a href='{% url 'wishlist' %}' class="action-btn">
         <ion-icon name="heart-outline"></ion-icon>
 
         <span class="count">0</span>
       </button>
 
-      <button class="action-btn" data-mobile-menu-open-btn>
+      {% comment %} <a class="action-btn" data-mobile-menu-open-btn>
         <ion-icon name="grid-outline"></ion-icon>
-      </button>
+      </a> {% endcomment %}
 
     </div>
 
@@ -2365,7 +2365,7 @@
               <ion-icon name="mail-outline"></ion-icon>
             </div>
 
-            <a href="mailto:example@gmail.com" class="footer-nav-link">example@gmail.com</a>
+            <a href="mailto:example@gmail.com" class="footer-nav-link">nikhilambure25@gmail.com</a>
           </li>
 
         </ul>
