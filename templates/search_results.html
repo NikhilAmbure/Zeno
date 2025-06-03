@@ -1,3 +1,4 @@
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -163,54 +164,140 @@
 
   </div>
 
-  <div class="container mx-auto px-4 py-8">
-    {% if search %}
-      <h2 class="text-2xl font-bold mb-6">Search Results for "{{ search }}"</h2>
-    {% else %}
-      <h2 class="text-2xl font-bold mb-6">Start typing to search for products</h2>
-    {% endif %}
-
-    {% if results %}
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {% for product in results %}
-        <div class="border rounded-lg shadow-sm p-2 text-center bg-gray-50 hover:shadow-md transition duration-300">
-
-          <a href="{% url 'product_detail' product.id %}">
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="h-28 w-full object-contain mb-2 mx-auto">
-            <h3 class="text-sm font-medium truncate px-1">{{ product.name }}</h3>
-          </a>
-
-          <div class="text-xs text-gray-500 mb-1">{{ product.category.name }}</div>
-
-          <div class="text-yellow-400 text-sm flex gap-1 justify-center">
-            <ion-icon name="star"></ion-icon>
-            <ion-icon name="star"></ion-icon>
-            <ion-icon name="star"></ion-icon>
-            <ion-icon name="star-outline"></ion-icon>
-            <ion-icon name="star-outline"></ion-icon>
-          </div>
-
-          <div class="text-sm font-semibold text-green-600 mt-1">
-            ${{ product.price }}
-            {% if product.old_price %}
-            <del class="text-gray-400 text-xs ml-1">${{ product.old_price }}</del>
-            {% endif %}
-          </div>
-
-          <form method="POST" action="{% url 'add_to_cart' product.id %}" class="mt-2">
-            {% csrf_token %}
-            <button type="submit" class="mx-auto block text-xs bg-[#FA8072] text-black border border-[#FA8072] px-2 py-1 rounded hover:bg-black hover:text-white transition duration-300">
-              Add to Cart
-            </button>
-          </form>
-
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Search Header -->
+    <div class="mb-8 text-center sm:text-left">
+      {% if search %}
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-gray-600 mb-4 sm:mb-0">  
+            Showing results for <span class="font-semibold">"{{ search }}"</span> 
+            <span class="text-gray-800 font-medium">{{ results|length }} item{{ results|length|pluralize }}</span> found
+          </p>
         </div>
+      {% else %}
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <ion-icon name="information-circle-outline" class="h-5 w-5 text-yellow-400"></ion-icon>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-yellow-700">
+                Start typing in the search bar above to find products.
+              </p>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Product Grid -->
+    {% if results %}
+      <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {% for product in results %}
+          <div class="group relative bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col h-full">
+            <!-- Product Image -->
+            <div class="aspect-w-1 aspect-h-1 bg-gray-200 overflow-hidden">
+              <a href="{% url 'product_detail' product.id %}" class="block p-4">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-48 object-contain group-hover:opacity-90 transition-opacity">
+              </a>
+              <!-- Wishlist Button -->
+              <button class="absolute top-3 right-3 p-2 rounded-full bg-white bg-opacity-80 shadow-sm hover:bg-red-50 transition-colors">
+                <ion-icon name="heart-outline" class="text-gray-400 hover:text-red-500"></ion-icon>
+              </button>
+            </div>
+
+            <!-- Product Info -->
+            <div class="p-4 flex-grow">
+              <a href="{% url 'product_detail' product.id %}" class="block">
+                <h3 class="text-sm font-medium text-gray-900 mb-1 line-clamp-2">{{ product.name }}</h3>
+                <p class="text-xs text-gray-500 mb-2">{{ product.category.name }}</p>
+                
+                <!-- Rating -->
+                <div class="flex items-center mb-2">
+                  <div class="flex text-yellow-400">
+                    {% for i in "12345" %}
+                      {% if forloop.counter <= 3 %}
+                        <ion-icon name="star" class="w-3 h-3"></ion-icon>
+                      {% else %}
+                        <ion-icon name="star-outline" class="w-3 h-3"></ion-icon>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+                  <span class="text-xs text-gray-500 ml-1">(12)</span>
+                </div>
+                
+                <!-- Price -->
+                <div class="mt-2">
+                  <p class="text-base font-semibold text-red-600">
+                    ${{ product.price }}
+                    {% if product.old_price %}
+                      <span class="text-xs text-gray-400 line-through ml-1">${{ product.old_price }}</span>
+                    {% endif %}
+                  </p>
+                </div>
+              </a>
+            </div>
+
+            <!-- Add to Cart Button -->
+            <div class="px-4 pb-4">
+              <form method="POST" action="{% url 'add_to_cart' product.id %}">
+                {% csrf_token %}
+                <button type="submit" class="w-full flex items-center justify-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                  <ion-icon name="cart-outline" class="mr-2"></ion-icon>
+                  Add to Cart
+                </button>
+              </form>
+            </div>
+          </div>
         {% endfor %}
       </div>
     {% else %}
-      <p class="text-gray-500 mt-6">No products found matching your search.</p>
+      <!-- Empty State -->
+      <div class="text-center py-12">
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No products found</h3>
+        <p class="text-gray-500 max-w-md mx-auto mb-6">
+          We couldn't find any products matching your search. Try different keywords or browse our categories.
+        </p>
+        <a href="{% url 'index' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+          Browse All Products
+        </a>
+      </div>
     {% endif %}
-  </div>
+  </main>
+
+  <!-- Mobile Responsive Header -->
+  <style>
+    @media (max-width: 768px) {
+      .header-top {
+        padding: 10px 0;
+      }
+      .header-social-container {
+        justify-content: center;
+        margin-bottom: 10px;
+      }
+      .header-alert-news {
+        text-align: center;
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+      .header-main {
+        flex-direction: column;
+        padding: 10px 0;
+      }
+      .header-logo {
+        margin-bottom: 15px;
+      }
+      .header-search-container {
+        width: 100%;
+        margin-bottom: 15px;
+      }
+      .header-user-actions {
+        width: 100%;
+        justify-content: space-around;
+      }
+    }
+  </style>
 
 </body>
 </html>
