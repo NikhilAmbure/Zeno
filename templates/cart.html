@@ -1,160 +1,247 @@
-<!-- Tailwind CSS CDN -->
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cart</title>
+  <title>Shopping Cart</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}" type="image/x-icon">
 </head>
 
-<body class="bg-pink-50">
-<section class="min-h-screen py-6 px-4 sm:px-6 lg:px-8">
-
-  <!-- Home Link -->
-  <div class="mb-6">
-    <a href="{% url 'index' %}" 
-      class="inline-flex items-center gap-2 text-sm sm:text-base font-medium text-white bg-pink-500 hover:bg-pink-600 px-4 py-2 rounded-full shadow-md transition duration-200">
-      ← Home
-    </a>
-  </div>
+<!-- bg-gray-100 = light gray background for whole page -->
+<body class="bg-gray-100">
   
-  <!-- Heading -->
-  <div class="text-center mb-8">
-    <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800">🛒 Your Cart</h2>
-  </div>
-
-  <!-- Cart Table Wrapper -->
-  <div class="bg-white rounded-2xl shadow-lg p-4 sm:p-6 overflow-x-auto">
-
-    <!-- Table for md+ screens -->
-    <div class="hidden md:block">
-      <table class="w-full table-auto text-left">
-        <thead>
-          <tr class="text-sm text-gray-500 border-b uppercase tracking-wide">
-            <th class="pb-3">Product</th>
-            <th class="pb-3 text-center">Quantity</th>
-            <th class="pb-3">Price</th>
-            <th class="pb-3">Remove</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in cart_items %}
-          <tr class="border-b hover:bg-pink-50 transition-all duration-150">
-            <td class="py-5 flex items-center gap-4">
-              <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 rounded-xl object-cover">
-              <span class="font-medium text-gray-800">{{ item.product.name }}</span>
-            </td>
-            <td class="py-5">
-              <div class="flex items-center justify-center gap-2 min-w-[120px]">
-                <!-- Decrease -->
-                <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
-                  {% csrf_token %}
-                  <input type="hidden" name="action" value="decrease">
-                  <button type="submit" class="w-8 h-8 bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full">−</button>
-                </form>
-                <div class="text-lg font-semibold text-gray-700">{{ item.quantity }}</div>
-                <!-- Increase -->
-                <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
-                  {% csrf_token %}
-                  <input type="hidden" name="action" value="increase">
-                  <button type="submit" class="w-8 h-8 bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full">+</button>
-                </form>
-              </div>
-            </td>
-            <td class="py-5 font-semibold text-green-600 text-base">₹{{ item.subtotal }}</td>
-            <td class="py-5">
-              <a href="{% url 'remove_from_cart' item.product.id %}" class="text-red-500 hover:underline text-sm">Remove</a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="4" class="text-center py-6 text-gray-400">Your cart is empty.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-        <tfoot>
-          <tr class="font-bold text-lg border-t">
-            <td colspan="2" class="py-5 text-right text-gray-700">Total:</td>
-            <td colspan="2" class="py-5 text-green-700">₹{{ total_price }}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-
-    <!-- Mobile-friendly layout -->
-    <div class="md:hidden space-y-6">
-      {% for item in cart_items %}
-      <div class="border rounded-xl p-4 bg-pink-50 shadow-sm">
-        <div class="flex items-center gap-4 mb-3">
-          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-16 h-16 rounded-xl object-cover">
-          <div>
-            <h3 class="text-base font-semibold text-gray-800">{{ item.product.name }}</h3>
-            <p class="text-sm text-green-600 font-bold">₹{{ item.subtotal }}</p>
-          </div>
-        </div>
-        <div class="flex justify-between items-center">
-          <!-- Quantity Controls -->
-          <div class="flex items-center gap-2">
-            <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
-              {% csrf_token %}
-              <input type="hidden" name="action" value="decrease">
-              <button type="submit" class="w-8 h-8 bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full">−</button>
-            </form>
-            <span class="text-lg font-medium text-gray-700">{{ item.quantity }}</span>
-            <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
-              {% csrf_token %}
-              <input type="hidden" name="action" value="increase">
-              <button type="submit" class="w-8 h-8 bg-pink-100 hover:bg-pink-200 text-pink-700 text-lg font-bold rounded-full">+</button>
-            </form>
-          </div>
-          <!-- Remove -->
-          <a href="{% url 'remove_from_cart' item.product.id %}" class="text-red-500 text-sm hover:underline">Remove</a>
-        </div>
-      </div>
-      {% empty %}
-      <p class="text-center text-gray-400">Your cart is empty.</p>
-      {% endfor %}
-
-      <!-- Total Price -->
-      <div class="text-right font-semibold text-lg text-gray-700 pt-2">
-        Total: <span class="text-green-700">₹{{ total_price }}</span>
-      </div>
-    </div>
-
-    <!-- Checkout Button -->
-    {% if cart_items %}
-    <div class="flex justify-end mt-6">
-      <a href="{% url 'checkout' %}" class="bg-pink-500 hover:bg-pink-600 text-white font-semibold px-6 py-3 rounded-full shadow-md transition duration-200">
-        Proceed to Checkout
+  <!-- max-w-4xl = maximum width, mx-auto = center horizontally, p-6 = padding all sides -->
+  <div class="max-w-4xl mx-auto p-6">
+    
+    <!-- HEADER SECTION -->
+    <div class="mb-6">  <!-- mb-6 = margin bottom -->
+      <!-- bg-blue-500 = blue background, text-white = white text, px-4 py-2 = padding horizontal & vertical -->
+      <!-- rounded = rounded corners, hover:bg-blue-600 = darker blue on hover -->
+      <a href="{% url 'index' %}" 
+         class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        ← Back to Shop
       </a>
     </div>
-    {% endif %}
+    
+    <!-- PAGE TITLE SECTION -->
+    <!-- text-center = center align text -->
+    <div class="text-center mb-8">
+      <!-- text-3xl = large text size, font-bold = bold weight, text-gray-800 = dark gray -->
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">Shopping Cart</h1>
+      <!-- text-gray-600 = medium gray text -->
+      <p class="text-gray-600">Review your items before checkout</p>
+    </div>
+
+    <!-- MAIN CART CONTAINER -->
+    <!-- bg-white = white background, rounded-lg = rounded corners, shadow = drop shadow -->
+    <div class="bg-white rounded-lg shadow p-6">
+      
+      <!-- DESKTOP TABLE VIEW -->
+      <!-- hidden md:block = hide on mobile, show on medium screens and up -->
+      <div class="hidden md:block">
+        <!-- w-full = full width table -->
+        <table class="w-full">
+          <!-- bg-gray-50 = very light gray background for header -->
+          <thead class="bg-gray-50">
+            <tr>
+              <!-- text-left = align text left, py-4 px-4 = padding vertical & horizontal -->
+              <!-- font-semibold = semi-bold text weight -->
+              <th class="text-left py-4 px-4 font-semibold text-gray-700">Product</th>
+              <th class="text-center py-4 px-4 font-semibold text-gray-700">Quantity</th>
+              <th class="text-left py-4 px-4 font-semibold text-gray-700">Price</th>
+              <th class="text-center py-4 px-4 font-semibold text-gray-700">Remove</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in cart_items %}
+            <!-- border-t = border on top, hover:bg-gray-50 = light gray on hover -->
+            <tr class="border-t hover:bg-gray-50">
+              <td class="py-4 px-4">
+                <!-- flex = flexbox layout, items-center = center items vertically -->
+                <!-- space-x-4 = space between items horizontally -->
+                <div class="flex items-center space-x-4">
+                  <!-- w-16 h-16 = width and height 64px, object-cover = crop image to fit -->
+                  <img src="{{ item.product.image.url }}" 
+                       alt="{{ item.product.name }}" 
+                       class="w-16 h-16 rounded object-cover">
+                  <div>
+                    <!-- font-medium = medium font weight, text-gray-900 = very dark gray -->
+                    <h3 class="font-medium text-gray-900">{{ item.product.name }}</h3>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 px-4 text-center">
+                <!-- justify-center = center horizontally in flex container -->
+                <div class="flex items-center justify-center space-x-3">
+                  
+                  <!-- DECREASE BUTTON -->
+                  <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="decrease">
+                    <!-- w-8 h-8 = 32px width and height, bg-gray-200 = light gray background -->
+                    <!-- hover:bg-gray-300 = darker gray on hover, rounded-full = completely round -->
+                    <button type="submit" 
+                            class="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full text-gray-600 font-bold">
+                      −
+                    </button>
+                  </form>
+                  
+                  <!-- QUANTITY DISPLAY -->
+                  <!-- mx-4 = margin left and right, text-lg = large text -->
+                  <span class="mx-4 font-semibold text-lg">{{ item.quantity }}</span>
+                  
+                  <!-- INCREASE BUTTON -->
+                  <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="increase">
+                    <button type="submit" 
+                            class="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-full text-gray-600 font-bold">
+                      +
+                    </button>
+                  </form>
+                </div>
+              </td>
+              <!-- text-green-600 = green color for price -->
+              <td class="py-4 px-4 font-semibold text-green-600 text-lg">₹{{ item.subtotal }}</td>
+              <td class="py-4 px-4 text-center">
+                <!-- text-red-500 = red color, hover:underline = underline on hover -->
+                <a href="{% url 'remove_from_cart' item.product.id %}" 
+                   class="text-red-500 hover:underline">
+                  Remove
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <!-- colspan="4" = span across 4 columns, py-12 = large vertical padding -->
+              <td colspan="4" class="text-center py-12">
+                <!-- text-gray-400 = light gray text -->
+                <div class="text-gray-400">
+                  <!-- text-4xl = very large text for emoji -->
+                  <div class="text-4xl mb-4">🛒</div>
+                  <p class="text-lg">Your cart is empty</p>
+                  <!-- text-sm = small text -->
+                  <p class="text-sm">Add some products to get started!</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- MOBILE VIEW -->
+      <!-- md:hidden = hide on medium screens and up (opposite of above) -->
+      <!-- space-y-4 = vertical space between items -->
+      <div class="md:hidden space-y-4">
+        {% for item in cart_items %}
+        <!-- border = border all around, bg-gray-50 = light gray background -->
+        <div class="border rounded-lg p-4 bg-gray-50">
+          <div class="flex items-center space-x-4 mb-4">
+            <img src="{{ item.product.image.url }}" 
+                 alt="{{ item.product.name }}" 
+                 class="w-16 h-16 rounded object-cover">
+            <!-- flex-1 = take remaining space in flex container -->
+            <div class="flex-1">
+              <h3 class="font-medium text-gray-900 mb-1">{{ item.product.name }}</h3>
+              <p class="text-green-600 font-semibold text-lg">₹{{ item.subtotal }}</p>
+            </div>
+          </div>
+          
+          <!-- justify-between = space items at opposite ends -->
+          <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+              <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="decrease">
+                <!-- bg-white = white background, border = gray border -->
+                <button type="submit" 
+                        class="w-8 h-8 bg-white border rounded-full text-gray-600 font-bold hover:bg-gray-100">
+                  −
+                </button>
+              </form>
+              
+              <span class="mx-3 font-semibold text-lg">{{ item.quantity }}</span>
+              
+              <form method="POST" action="{% url 'update_cart_quantity' item.product.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="increase">
+                <button type="submit" 
+                        class="w-8 h-8 bg-white border rounded-full text-gray-600 font-bold hover:bg-gray-100">
+                  +
+                </button>
+              </form>
+            </div>
+            
+            <a href="{% url 'remove_from_cart' item.product.id %}" 
+               class="text-red-500 hover:underline text-sm">
+              Remove
+            </a>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-12 text-gray-400">
+          <div class="text-4xl mb-4">🛒</div>
+          <p class="text-lg">Your cart is empty</p>
+          <p class="text-sm">Add some products to get started!</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- CART TOTAL SECTION -->
+      {% if cart_items %}
+      <!-- border-t = border on top, pt-6 mt-6 = padding and margin on top -->
+      <div class="border-t pt-6 mt-6">
+        <div class="flex justify-between items-center mb-6">
+          <!-- text-xl = extra large text -->
+          <span class="text-xl font-semibold text-gray-800">Total:</span>
+          <!-- text-2xl = extra extra large text -->
+          <span class="text-2xl font-bold text-green-600">₹{{ total_price }}</span>
+        </div>
+        
+        <!-- CHECKOUT BUTTON -->
+        <div class="text-center">
+          <!-- bg-green-500 = green background, px-8 py-3 = padding horizontal & vertical -->
+          <!-- inline-block = makes link behave like button -->
+          <a href="{% url 'checkout' %}" 
+             class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg text-lg font-semibold inline-block">
+            Proceed to Checkout
+          </a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
   </div>
 
-</section>
+  <!-- TOAST MESSAGES (success/error messages) -->
+  {% if messages %}
+  <!-- fixed = fixed position, top-4 right-4 = position from top and right -->
+  <!-- shadow-lg = large shadow -->
+  <div id="toast" 
+       class="fixed top-4 right-4 bg-green-500 text-white px-4 py-3 rounded shadow-lg">
+    {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+  </div>
+  
+  <script>
+    // Hide toast message after 3 seconds
+    setTimeout(function() {
+      const toast = document.getElementById('toast');
+      if (toast) {
+        toast.style.display = 'none';
+      }
+    }, 3000);
+  </script>
+  {% endif %}
 
-<!-- Toast Message -->
-{% if messages %}
-<div id="toast-message" class="fixed top-5 left-5 bg-green-500 text-white px-4 py-2 rounded shadow-lg text-sm z-50">
-  {% for message in messages %}
-    {{ message }}
-  {% endfor %}
-</div>
-
-<script>
-  setTimeout(() => {
-    const toast = document.getElementById('toast-message');
-    if (toast) toast.style.display = 'none';
-  }, 2000);
-</script>
-{% endif %}
-
-<!-- Prevent form resubmission on refresh -->
-<script>
-  history.replaceState(null, '', location.href);
-</script>
+  <!-- Prevent form resubmission on page refresh -->
+  <script>
+    if (window.history.replaceState) {
+      window.history.replaceState(null, null, window.location.href);
+    }
+  </script>
 </body>
 </html>

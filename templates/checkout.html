@@ -7,81 +7,238 @@
   <title>Checkout</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}" type="image/x-icon">
+  
+  <!-- Custom Tailwind Config for animations -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-up': 'slideUp 0.4s ease-out',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Simple CSS animations -->
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-pink-50 py-10 font-sans">
 
-  <section class="container mx-auto px-4">
-    <div class="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">
-      <h2 class="text-3xl font-semibold text-center mb-8 text-gray-800">Checkout</h2>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+  
+  <!-- Background decoration - floating shapes for visual appeal -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute top-10 left-10 w-32 h-32 bg-blue-100 rounded-full opacity-20 animate-pulse"></div>
+    <div class="absolute top-1/3 right-20 w-20 h-20 bg-purple-100 rounded-full opacity-30 animate-pulse" style="animation-delay: 1s;"></div>
+    <div class="absolute bottom-32 left-1/4 w-24 h-24 bg-pink-100 rounded-full opacity-25 animate-pulse" style="animation-delay: 2s;"></div>
+  </div>
 
-      <form method="POST" action="{% url 'select_payment_method' %}" class="space-y-8">
-        {% csrf_token %}
-
-        <!-- Shipping Info -->
-        <div>
-          <h3 class="text-xl font-semibold text-gray-700 mb-4">Shipping Information</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label for="name" class="block mb-2 font-semibold text-gray-700">Full Name</label>
-              <input type="text" id="name" name="name" required
-                     value="{{ request.user.get_full_name }}"
-                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-400 transition">
-            </div>
-
-            <div>
-              <label for="email" class="block mb-2 font-semibold text-gray-700">Email</label>
-              <input type="email" id="email" name="email" required
-                     value="{{ request.user.email }}"
-                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-400 transition">
-            </div>
-
-            <div>
-              <label for="phone" class="block mb-2 font-semibold text-gray-700">Phone Number</label>
-              <input type="text" id="phone" name="phone" required
-                     value="{{ user_profile.phone }}"
-                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-400 transition">
-            </div>
-
-            <div class="md:col-span-2">
-              <label for="address" class="block mb-2 font-semibold text-gray-700">Delivery Address</label>
-              <textarea id="address" name="address" required rows="4"
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-400 transition">{{ user_profile.address }}</textarea>
-            </div>
-          </div>
+  <!-- Main container with padding for mobile and desktop -->
+  <div class="relative z-10 min-h-screen py-6 px-4">
+    <div class="max-w-4xl mx-auto">
+      
+      <!-- Header Section -->
+      <div class="text-center mb-8 animate-fade-in">
+        <!-- Shopping cart icon with gradient background -->
+        <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center animate-pulse">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m4.5-5a2 2 0 11-4 0 2 2 0 014 0zm0 0a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
         </div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Checkout</h1>
+        <p class="text-gray-600">Review your order and complete your purchase</p>
+      </div>
 
-        <!-- Cart Summary -->
-        <div>
-          <h3 class="text-xl font-semibold text-gray-700 mb-4">Order Summary</h3>
-          <div class="space-y-4">
-            {% for item in cart_items %}
-              <div class="flex justify-between items-center border-b pb-2">
-                <div>
-                  <p class="font-medium text-gray-800">{{ item.product.name }}</p>
-                  <p class="text-sm text-gray-500">Qty: {{ item.quantity }}</p>
+      <!-- Main content grid - single column on mobile, two columns on desktop -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left side - Shipping form (takes 2 columns on desktop) -->
+        <div class="lg:col-span-2">
+          <form method="POST" action="{% url 'select_payment_method' %}" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Shipping Information Card -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 animate-slide-up">
+              
+              <!-- Section header with icon -->
+              <div class="flex items-center space-x-3 mb-6">
+                <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
                 </div>
-                <p class="text-pink-600 font-semibold">${{ item.subtotal }}</p>
+                <h3 class="text-xl font-semibold text-gray-800">Shipping Information</h3>
               </div>
-            {% endfor %}
-          </div>
-          <div class="mt-6 text-right">
-            <p class="text-lg font-bold text-gray-800">Total: ${{ total_price }}</p>
-            <p class="text-base">GST (18%): ${{ gst_amount }}</p>
-            <br>
-            <p class="text-lg font-bold text-green-600">Total Payable: ${{ total_with_gst }}</p>
+              
+              <!-- Form fields in a responsive grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Full Name Input -->
+                <div class="space-y-2">
+                  <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                  <input type="text" id="name" name="name" required
+                         value="{{ request.user.get_full_name }}"
+                         class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white">
+                </div>
+                
+                <!-- Email Input -->
+                <div class="space-y-2">
+                  <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                  <input type="email" id="email" name="email" required
+                         value="{{ request.user.email }}"
+                         class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white">
+                </div>
+                
+                <!-- Phone Input -->
+                <div class="space-y-2 md:col-span-2">
+                  <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                  <input type="text" id="phone" name="phone" required
+                         value="{{ user_profile.phone }}"
+                         class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white">
+                </div>
+                
+                <!-- Address Textarea - spans full width -->
+                <div class="space-y-2 md:col-span-2">
+                  <label for="address" class="block text-sm font-medium text-gray-700">Delivery Address</label>
+                  <textarea id="address" name="address" required rows="3"
+                            class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 bg-gray-50 hover:bg-white resize-none">{{ user_profile.address }}</textarea>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Submit button - only visible on mobile, hidden on desktop -->
+            <div class="lg:hidden">
+              <button type="submit"
+                      class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 px-6 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center space-x-2">
+                <span>Proceed to Payment</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Right side - Order Summary (1 column on desktop) -->
+        <div class="lg:col-span-1">
+          <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 animate-slide-up sticky top-6">
+            
+            <!-- Section header with icon -->
+            <div class="flex items-center space-x-3 mb-6">
+              <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-800">Order Summary</h3>
+            </div>
+            
+            <!-- Cart items list -->
+            <div class="space-y-4 mb-6">
+              {% for item in cart_items %}
+                <div class="flex justify-between items-start p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                  <div class="flex-1">
+                    <p class="font-medium text-gray-800 text-sm">{{ item.product.name }}</p>
+                    <p class="text-xs text-gray-500 mt-1">Quantity: {{ item.quantity }}</p>
+                  </div>
+                  <p class="text-blue-600 font-semibold text-sm ml-3">${{ item.subtotal }}</p>
+                </div>
+              {% endfor %}
+            </div>
+            
+            <!-- Price breakdown -->
+            <div class="border-t border-gray-200 pt-4 space-y-2">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">Subtotal:</span>
+                <span class="font-medium">${{ total_price }}</span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-600">GST (18%):</span>
+                <span class="font-medium">${{ gst_amount }}</span>
+              </div>
+              <div class="border-t border-gray-200 pt-2 mt-3">
+                <div class="flex justify-between">
+                  <span class="text-lg font-bold text-gray-800">Total:</span>
+                  <span class="text-lg font-bold text-green-600">${{ total_with_gst }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Submit button - only visible on desktop -->
+            <div class="hidden lg:block mt-6">
+              <button type="submit" form="checkoutForm"
+                      class="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-4 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center space-x-2">
+                <span>Proceed to Payment</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-
-        <!-- Checkout Button -->
-        <div class="pt-4">
-          <button type="submit"
-                  class="w-full bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg font-semibold transition">
-            Proceed to Payment
-          </button>
+      </div>
+      
+      <!-- Security badge at bottom -->
+      <div class="text-center mt-8">
+        <div class="inline-flex items-center space-x-2 text-sm text-gray-500 bg-white/50 px-4 py-2 rounded-full">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+          <span>Your information is secure and encrypted</span>
         </div>
-      </form>
+      </div>
     </div>
-  </section>
+  </div>
 
+  <!-- Simple JavaScript for form enhancement -->
+  <script>
+    // Add form ID for desktop button to work
+    document.querySelector('form').id = 'checkoutForm';
+    
+    // Add focus effects to form inputs
+    document.querySelectorAll('input, textarea').forEach(input => {
+      // When user clicks on input
+      input.addEventListener('focus', function() {
+        this.classList.add('ring-2', 'ring-blue-400', 'border-transparent');
+      });
+      
+      // When user clicks away from input
+      input.addEventListener('blur', function() {
+        this.classList.remove('ring-2', 'ring-blue-400', 'border-transparent');
+      });
+    });
+    
+    // Form validation
+    document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+      const requiredFields = this.querySelectorAll('[required]');
+      let isValid = true;
+      
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          isValid = false;
+          field.classList.add('border-red-400');
+        } else {
+          field.classList.remove('border-red-400');
+        }
+      });
+      
+      if (!isValid) {
+        e.preventDefault();
+        alert('Please fill in all required fields');
+      }
+    });
+  </script>
 </body>
 </html>
