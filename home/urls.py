@@ -23,6 +23,7 @@ urlpatterns = [
 
     path('edit-profile/', edit_profile_view, name='edit-profile'),
     path('product/<int:pk>/', product_detail, name='product_detail'),
+    path('blog/', blog_view, name='blog'),
 
     path('search/', search_results, name='search_results'),
     path('checkout/', checkout_page, name='checkout'),

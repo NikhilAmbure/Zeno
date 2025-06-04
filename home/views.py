@@ -139,7 +139,13 @@ def enter_otp_page(request, user_id):
 
             if data['count'] >= 3:
                 messages.error(request, "You can request OTP after 5min.")
-                redirect('/login/')
+                return redirect('/login/')
+            
+            data['count'] += 1
+            cache.set(user_obj.username, data, 60 * 5)
+        else:
+            data = {'count': 1}
+            cache.set(user_obj.username, data, 60 * 5)
 
         otp = request.POST.get('otp')
 
@@ -158,17 +164,17 @@ def enter_otp_page(request, user_id):
 # To show the cart items
 def cart_view(request): 
     cart_items = []
-    total_price = 0
+    total_price = Decimal('0.00')
 
     # Always use session-based cart
     cart = request.session.get('cart', {})
-    print("Session cart content:", cart)
 
+    # Convert string keys to integers for product lookup
     product_ids = [int(pid) for pid in cart.keys() if pid.isdigit()]
     products = Product.objects.filter(id__in=product_ids)
 
     for product in products:
-        quantity = cart.get(str(product.id), 0)
+        quantity = int(cart.get(str(product.id), 0))  # Ensure quantity is an integer
         subtotal = product.price * quantity
         total_price += subtotal
         cart_items.append({
@@ -225,6 +231,8 @@ def clear_wishlist(request):
     return redirect('wishlist')
 
 def wishlist_count(request):
+    if not request.user.is_authenticated:
+        return {'wishlist_count': 0}
     count = WishlistItem.get_count(request.user)
     return {'wishlist_count': count}
 
@@ -235,6 +243,12 @@ def edit_profile_view(request):
     user = request.user
 
     if request.method == "POST":
+        # Validate username uniqueness if changed
+        new_username = request.POST.get('username', '').strip()
+        if new_username != user.username:
+            if User.objects.filter(username=new_username).exists():
+                messages.error(request, 'This username is already taken.')
+                return redirect('edit-profile')
 
         if request.FILES.get('profile'):
             user.profile_picture = request.FILES['profile']
@@ -298,16 +312,20 @@ def update_cart_quantity(request, product_id):
 
         product_id_str = str(product_id)
         if product_id_str in cart:
+            current_quantity = int(cart[product_id_str])
             if action == 'increase':
-                cart[product_id_str] += 1
+                cart[product_id_str] = current_quantity + 1
             elif action == 'decrease':
-                if cart[product_id_str] > 1:
-                    cart[str(product_id)] = max(cart[str(product_id)] - 1, 1)
+                if current_quantity > 1:
+                    cart[product_id_str] = current_quantity - 1
+                else:
+                    del cart[product_id_str]  # Remove item if quantity would be 0
 
         request.session['cart'] = cart
         request.session.modified = True
         messages.success(request, "Cart updated!")
         return redirect('cart')
+    return redirect('cart')  # Handle non-POST requests
 
 
 # 1st
@@ -404,3 +422,6 @@ def razorpay_payment(request):
 
 def place_order_cod(request):
     return redirect('index')
+
+def blog_view(request):
+    return render(request, 'blog.html')
