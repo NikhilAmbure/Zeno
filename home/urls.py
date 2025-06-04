@@ -22,13 +22,15 @@ urlpatterns = [
     path('clear-wishlist/', clear_wishlist, name='clear_wishlist'),
 
     path('edit-profile/', edit_profile_view, name='edit-profile'),
+    path('my-orders/', my_orders, name='my-orders'),
+    # path('order/<int:order_id>/', order_detail, name='order_detail'),
     path('product/<int:pk>/', product_detail, name='product_detail'),
     path('blog/', blog_view, name='blog'),
 
     path('search/', search_results, name='search_results'),
     path('checkout/', checkout_page, name='checkout'),
     path('select-payment-method/', select_payment_method, name='select_payment_method'),
-    path('razorpay-payment/', razorpay_payment, name='razorpay-payment'),
-    path('place-order-cod/', place_order_cod, name='place-order-cod'),
+    path('place-order/cod/', place_order_cod, name='place_order_cod'),
+    path('razorpay-payment/', razorpay_payment, name='razorpay_payment'),
 
 ]

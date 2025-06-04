@@ -47,86 +47,59 @@
                 <p class="text-sm text-gray-600">Choose how you'd like to pay</p>
             </div>
 
-            <form method="POST" class="space-y-3">
+            <!-- Main Form -->
+            <form action="{% url 'place_order_cod' %}" method="POST" class="space-y-3" id="payment-form">
                 {% csrf_token %}
                 
                 <!-- Razorpay Option -->
                 <label class="block cursor-pointer group">
                     <div class="relative p-4 bg-white rounded-xl border-2 border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-md group-hover:-translate-y-0.5">
                         <div class="flex items-center space-x-3">
-                            <input type="radio" name="payment_method" value="RAZORPAY" required class="sr-only peer" onchange="updateSelection(this)">
-                            
-                            <!-- Custom Radio -->
+                            <input type="radio" name="payment_method" value="RAZORPAY" class="sr-only peer" onchange="togglePaymentMethod(this)">
                             <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-blue-500 transition-colors">
                                 <div class="w-2.5 h-2.5 bg-blue-500 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
                             </div>
-                            
-                            <!-- Icon -->
                             <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
-                            
-                            <!-- Content -->
                             <div class="flex-1 min-w-0">
                                 <h3 class="font-semibold text-gray-800 text-sm">Razorpay</h3>
                                 <p class="text-xs text-gray-500 truncate">Cards, UPI, Wallets</p>
                             </div>
-                            
-                            <!-- Selected Checkmark -->
-                            <div class="text-green-500 opacity-0 peer-checked:opacity-100 transition-opacity">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
                         </div>
                     </div>
                 </label>
-
-                <!-- Cash on Delivery Option -->
+            
+                <!-- COD Option -->
                 <label class="block cursor-pointer group">
                     <div class="relative p-4 bg-white rounded-xl border-2 border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-md group-hover:-translate-y-0.5">
                         <div class="flex items-center space-x-3">
-                            <input type="radio" name="payment_method" value="COD" required class="sr-only peer" onchange="updateSelection(this)">
-                            
-                            <!-- Custom Radio -->
+                            <input type="radio" name="payment_method" value="COD" class="sr-only peer" checked onchange="togglePaymentMethod(this)">
                             <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-blue-500 transition-colors">
                                 <div class="w-2.5 h-2.5 bg-blue-500 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
                             </div>
-                            
-                            <!-- Icon -->
                             <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
                             </div>
-                            
-                            <!-- Content -->
                             <div class="flex-1 min-w-0">
                                 <h3 class="font-semibold text-gray-800 text-sm">Cash on Delivery</h3>
                                 <p class="text-xs text-gray-500 truncate">Pay when delivered</p>
                             </div>
-                            
-                            <!-- Selected Checkmark -->
-                            <div class="text-green-500 opacity-0 peer-checked:opacity-100 transition-opacity">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </label>
-
-                <!-- Continue Button -->
-                <button type="submit" class="w-full mt-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center space-x-2">
-                    <span>Continue</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                    </svg>
+            
+                <!-- Submit Button -->
+                <button type="submit" class="w-full mt-4 bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 px-4 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300">
+                    Place Order (COD)
                 </button>
             </form>
+            
+            
 
             <!-- Security Text -->
             <div class="mt-4 text-center">
@@ -151,7 +124,33 @@
             const selectedCard = radio.closest('label').querySelector('div');
             selectedCard.classList.remove('border-gray-200');
             selectedCard.classList.add('border-blue-500', 'shadow-md');
-        }
+            }
+            function togglePaymentMethod(radio) {
+                const razorpayDiv = document.getElementById('razorpay-details');
+                const codDiv = document.getElementById('cod-details');
+        
+                if (radio.value === 'RAZORPAY') {
+                    razorpayDiv.classList.remove('hidden');
+                    codDiv.classList.add('hidden');
+                } else if (radio.value === 'COD') {
+                    razorpayDiv.classList.add('hidden');
+                    codDiv.classList.remove('hidden');
+                }
+            }
+        
+            // Auto-trigger selection on load
+            window.onload = () => {
+                const checkedRadio = document.querySelector('input[name="payment_method"]:checked');
+                if (checkedRadio) togglePaymentMethod(checkedRadio);
+            }
+        
+        document.getElementById('payment-form').addEventListener('submit', function(e) {
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            if (selectedMethod === 'RAZORPAY') {
+                e.preventDefault();
+                window.location.href = "{% url 'razorpay_payment' %}";
+            }
+        });
     </script>
 </body>
 </html>

@@ -94,7 +94,18 @@ class CartItem(models.Model):
 
 # models.py
 
+# Suggested improvements to your Order model in models.py
+
 class Order(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('confirmed', 'Confirmed'),
+        ('processing', 'Processing'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    )
+    
     PAYMENT_CHOICES = (
         ('RAZORPAY', 'Razorpay'),
         ('COD', 'Cash On Delivery'),
@@ -113,10 +124,26 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES)
     is_paid = models.BooleanField(default=False)
     ordered_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, default='pending')
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending')
+    
+    # Optional fields that your template expects
+    tracking_number = models.CharField(max_length=100, blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-ordered_at']
 
     def __str__(self):
         return f"Order {self.id} by {self.user.email}"
+    
+    @property
+    def total_items(self):
+        """Calculate total number of items in the order"""
+        return sum(item.quantity for item in self.items.all())
+    
+    @property
+    def status_display(self):
+        """Get human-readable status"""
+        return dict(self.STATUS_CHOICES).get(self.status, self.status)
 
 
 class WishlistItem(models.Model):

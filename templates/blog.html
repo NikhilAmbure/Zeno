@@ -16,7 +16,7 @@
       <div class="flex justify-between items-center h-16">
         <div class="flex items-center">
           <img src="{% static 'assets/images/logo/favicon.svg' %}" alt="Logo" class="h-8 w-8" />
-          <span class="ml-2 text-xl font-semibold text-pink-600">Zeno</span>
+          <a href="{% url 'index' %}" class="ml-2 text-2xl font-semibold text-pink-600">Zeno</a>
         </div>
         <div class="hidden md:flex items-center space-x-8">
           <a href="{% url 'index' %}" class="text-gray-700 hover:text-pink-600 transition duration-200">Home</a>
@@ -266,7 +266,7 @@
         <div>
           <div class="flex items-center mb-4">
             <img src="{% static 'assets/images/logo/favicon.svg' %}" alt="Logo" class="h-8 w-8" />
-            <span class="ml-2 text-xl font-semibold">Zeno</span>
+            <span class="ml-2 text-2xl font-semibold">Zeno</span>
           </div>
           <p class="text-gray-400 text-sm">
             Your trusted partner for online shopping and the latest fashion trends.

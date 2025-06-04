@@ -329,23 +329,25 @@ def update_cart_quantity(request, product_id):
 
 
 # 1st
+# Fixed checkout_page view in views.py
+
 @login_required(login_url='/login/')
 def checkout_page(request):
     cart = request.session.get('cart', {})
-    # print("Checkout cart content:", cart)
-    # print("Cart keys:", list(cart.keys()))
-
+    
     if not cart:
         messages.error(request, 'Your cart is empty. Please add items to proceed to checkout.')
         return redirect('cart')
 
-    products = Product.objects.filter(id__in = cart.keys())
+    # Convert string keys to integers for proper filtering
+    product_ids = [int(pid) for pid in cart.keys() if pid.isdigit()]
+    products = Product.objects.filter(id__in=product_ids)
 
     total_price = Decimal('0.00')
     cart_items = []
 
     for product in products:
-        quantity = cart[str(product.id)]
+        quantity = int(cart[str(product.id)])  # Ensure quantity is integer
         subtotal = product.price * quantity
         total_price += subtotal
         cart_items.append({
@@ -356,7 +358,7 @@ def checkout_page(request):
 
     # Add GST (18%)
     gst_rate = Decimal('0.18')
-    gst_amount = (total_price * gst_rate).quantize(Decimal('0.01'))  # round to 2 decimal places
+    gst_amount = (total_price * gst_rate).quantize(Decimal('0.01'))
     total_with_gst = total_price + gst_amount
 
     if request.method == 'POST':
@@ -365,50 +367,51 @@ def checkout_page(request):
         phone = request.POST.get('phone')
         address = request.POST.get('address')
 
-        # Clearing old CartItems for this user
+        # Create order FIRST
+        order = Order.objects.create(
+            user=request.user,
+            total_price=total_with_gst,
+            payment_method='COD',  # Temporary is COD
+            is_paid=False,
+            name=name,
+            email=email,
+            phone=phone,
+            address=address
+        )
+
+        # Clear old CartItems for this user 
         CartItem.objects.filter(user=request.user).delete()
 
-        # Save cart items into database as CartItem objects
+        # Create CartItem objects and associate with order
         saved_items = []
         for item in cart_items:
             cart_item = CartItem.objects.create(
-                user = request.user,
-                product = item['product'],
-                quantity = item['quantity']
+                user=request.user,
+                product=item['product'],
+                quantity=item['quantity']
             )
             saved_items.append(cart_item)
 
-        # Create order
-        order = Order.objects.create(
-            user = request.user,
-            total_price = total_with_gst,
-            payment_method = 'COD', #Temporary is COD
-            is_paid = False,
-            name = name,
-            email = email,
-            phone = phone,
-            address = address
-        )
-
+        # Associate CartItems with the order AFTER both are saved
         order.items.set(saved_items)
-        order.save()
 
-
-        # Clearing the cart after order creation
+        # Clear the cart after successful order creation
         request.session['cart'] = {}
         request.session.modified = True
 
-        # Redirect to payment selection page
-        request.session['order_id'] = order.id # Save order id for payment  # For generating the receipt later
+        # Save order id for payment processing
+        request.session['order_id'] = order.id
+        
+        messages.success(request, f'Order #{order.id} created successfully!')
+        
         return redirect('select_payment_method')
-    
 
     return render(request, 'checkout.html', {
         'cart_items': cart_items,
         'total_price': total_price,
         'gst_amount': gst_amount,
         'total_with_gst': total_with_gst,
-        'user_profile': request.user # To prefill the user details in form
+        'user_profile': request.user
     })
 
 
@@ -420,8 +423,99 @@ def select_payment_method(request):
 def razorpay_payment(request):
     return render(request, 'razorpay.html')
 
+@login_required(login_url='/login/')
 def place_order_cod(request):
-    return redirect('index')
+    if request.method != 'POST':
+        messages.error(request, 'Invalid request method')
+        return redirect('select_payment_method')
+
+    order_id = request.session.get('order_id')
+    if not order_id:
+        messages.error(request, 'No order found')
+        return redirect('cart')
+
+    try:
+        order = Order.objects.get(id=order_id, user=request.user)
+        
+        # Update order status and payment method
+        order.status = 'confirmed'
+        order.payment_method = 'COD'
+        order.save()
+
+        # Clear session data
+        if 'order_id' in request.session:
+            del request.session['order_id']
+        request.session.modified = True
+
+        messages.success(request, 'Your order has been placed successfully! You can track it in My Orders.')
+        return redirect('my-orders')
+
+    except Order.DoesNotExist:
+        messages.error(request, 'Order not found')
+        return redirect('cart')
+    except Exception as e:
+        messages.error(request, f'Error processing order: {str(e)}')
+        return redirect('cart')
 
 def blog_view(request):
     return render(request, 'blog.html')
+
+
+
+@login_required(login_url='/login/')
+def my_orders(request):
+    """View to display user's orders with all required data for template"""
+    
+    # Get all orders for the current user
+    orders = Order.objects.filter(user=request.user).order_by('-ordered_at')
+    
+    # Calculate totals for hero section
+    total_orders = orders.count()
+    total_spent = sum(order.total_price for order in orders)
+    
+    # Prepare orders data for template
+    orders_data = []
+    
+    for order in orders:
+        # Get all cart items for this order
+        cart_items = order.items.all()
+        
+        # Prepare items data
+        items_data = []
+        total_items = 0
+        
+        for item in cart_items:
+            items_data.append({
+                'product': item.product,
+                'quantity': item.quantity,
+                'price': item.product.price,
+                'subtotal': item.total_price,  # This uses the property from CartItem model
+            })
+            total_items += item.quantity
+        
+        # Prepare order data
+        order_data = {
+            'order_id': order.id,
+            'status': order.status.title(),  
+            'ordered_at': order.ordered_at,
+            'items': items_data,
+            'total_items': total_items,
+            'payment_method': dict(Order.PAYMENT_CHOICES).get(order.payment_method, order.payment_method),
+            'is_paid': order.is_paid,
+            'total_price': order.total_price,
+            'shipping_address': order.address,  # Using the address field from Order model
+            'name': order.name,
+            'email': order.email,
+            'phone': order.phone,
+            'tracking_number': getattr(order, 'tracking_number', None),
+        }
+        
+        orders_data.append(order_data)
+    
+    context = {
+        'orders_data': orders_data,
+        'total_orders': total_orders,
+        'total_spent': total_spent,
+    }
+    
+    return render(request, 'my_orders.html', context)
