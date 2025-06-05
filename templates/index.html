@@ -604,9 +604,9 @@
             <a href="{% url 'blog' %}" class="menu-title hover:text-pink-500 transition-colors duration-200">Blog</a>
           </li>
 
-          <li class="menu-category">
+          {% comment %} <li class="menu-category">
             <a href="#" class="menu-title hover:text-pink-500 transition-colors duration-200">Hot Offers</a>
-          </li>
+          </li> {% endcomment %}
         </ul>
       </div>
     </nav>
@@ -1362,7 +1362,7 @@
               <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center border-b pb-3">
                 <span class="bg-gradient-to-r from-pink-500 to-rose-500 w-1 h-6 rounded mr-3"></span>
                 New Arrivals
-                <a href="#" class="ml-auto text-sm font-medium text-pink-500 hover:text-pink-600 flex items-center">
+                <a href="{% url 'search_results' %}?section=new_arrivals" class="ml-auto text-sm font-medium text-pink-500 hover:text-pink-600 flex items-center">
                   View All
                   <ion-icon name="arrow-forward-outline" class="ml-1"></ion-icon>
                 </a>
@@ -1428,7 +1428,7 @@
               <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center border-b pb-3">
                 <span class="bg-gradient-to-r from-purple-500 to-indigo-500 w-1 h-6 rounded mr-3"></span>
                 Trending
-                <a href="#" class="ml-auto text-sm font-medium text-purple-500 hover:text-purple-600 flex items-center">
+                <a href="{% url 'search_results' %}?section=trending" class="ml-auto text-sm font-medium text-purple-500 hover:text-purple-600 flex items-center">
                   View All
                   <ion-icon name="arrow-forward-outline" class="ml-1"></ion-icon>
                 </a>
@@ -1492,7 +1492,7 @@
               <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center border-b pb-3">
                 <span class="bg-gradient-to-r from-blue-500 to-cyan-500 w-1 h-6 rounded mr-3"></span>
                 Top Rated
-                <a href="#" class="ml-auto text-sm font-medium text-blue-500 hover:text-blue-600 flex items-center">
+                <a href="{% url 'search_results' %}?section=top_rated" class="ml-auto text-sm font-medium text-blue-500 hover:text-blue-600 flex items-center">
                   View All
                   <ion-icon name="arrow-forward-outline" class="ml-1"></ion-icon>
                 </a>
@@ -1667,77 +1667,73 @@
 
           {% comment %} *****New Products*****  {% endcomment %}
 
-          <div class="product-main">
+          <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center border-b pb-3">
+              <span class="bg-gradient-to-r from-green-500 to-teal-500 w-1 h-6 rounded mr-3"></span>
+              New Products
+              <a href="{% url 'search_results' %}?section=new_products" class="ml-auto text-sm font-medium text-green-500 hover:text-green-600 flex items-center">
+                View All
+                <ion-icon name="arrow-forward-outline" class="ml-1"></ion-icon>
+              </a>
+            </h2>
 
-            <h2 class="title">New Products</h2>
-
-            <div class="product-grid">
-              
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
               {% for product in new_products %}
-              <div class="showcase">
-
-                <div class="showcase-banner">
-
-                  <img src="{{ product.image.url }}" alt="{{ product.name }}" width="300" class="product-img default">
-                  {% if product.secondary_image %}
-                  <img src="{{ product.secondary_image.url }}" alt="{{ product.name }}" width="300" class="product-img hover">
-                  {% endif %}
-
+              <div class="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100">
+                <a href="{% url 'product_detail' product.id %}" class="block relative group">
+                  <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-100">
+                    <img src="{{ product.image.url }}" 
+                         alt="{{ product.name }}" 
+                         class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300" />
+                  </div>
                   {% if product.discount_percent %}
-                  <p class="showcase-badge">{{ product.discount_percent }}%</p>
+                    <span class="absolute top-2 right-2 bg-gradient-to-r from-green-500 to-teal-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                      -{{ product.discount_percent }}%
+                    </span>
                   {% endif %}
-
-                  <div class="showcase-actions">
-
-                    <form method="POST" action="{% url 'add_to_wishlist' product.id %}">
+                  
+                  <!-- Quick action buttons -->
+                  <div class="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                    <form method="POST" action="{% url 'add_to_cart' product.id %}" class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                       {% csrf_token %}
-                      <button type="submit" class="btn-action" title="Add to Wishlist">
-                        <ion-icon name="heart-outline"></ion-icon>
+                      <button type="submit" class="bg-white text-gray-800 p-2 rounded-full hover:bg-green-500 hover:text-white transition-colors">
+                        <ion-icon name="cart-outline" class="text-lg"></ion-icon>
                       </button>
                     </form>
-
-                    <!-- Add to Cart Button wrapped in a form -->
-                    <form method="POST" action="{% url 'add_to_cart' product.id %}">
+                    <form method="POST" action="{% url 'add_to_wishlist' product.id %}" class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
                       {% csrf_token %}
-                      <button type="submit" class="btn-action" title="Add to Cart">
-                        <ion-icon name="bag-add-outline"></ion-icon>
+                      <button type="submit" class="bg-white text-gray-800 p-2 rounded-full hover:bg-green-500 hover:text-white transition-colors">
+                        <ion-icon name="heart-outline" class="text-lg"></ion-icon>
                       </button>
                     </form>
-
                   </div>
+                </a>
 
-                </div>
-
-                <div class="showcase-content">
-
-                  <a href="{{ product.category.get_absolute_url }}" class="showcase-category">{{ product.category.name }}</a>
-
-                  <a href="{% url 'product_detail' product.id %}">
-                    <h3 class="showcase-title">{{ product.name }}</h3>
+                <div class="p-3">
+                  <a href="{% url 'product_detail' product.id %}" class="block">
+                    <h3 class="text-sm font-medium text-gray-800 hover:text-green-500 transition-colors truncate">{{ product.name }}</h3>
                   </a>
-
-                  <div class="showcase-rating">
-                    <ion-icon name="star"></ion-icon>
-                    <ion-icon name="star"></ion-icon>
-                    <ion-icon name="star"></ion-icon>
-                    <ion-icon name="star-outline"></ion-icon>
-                    <ion-icon name="star-outline"></ion-icon>
+                  <p class="text-xs text-gray-500 mb-1">{{ product.category.name }}</p>
+                  
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-sm font-bold text-gray-800">${{ product.price }}</span>
+                      {% if product.old_price %}
+                        <span class="text-xs text-gray-400 line-through">${{ product.old_price }}</span>
+                      {% endif %}
+                    </div>
+                    <div class="flex text-amber-400 text-xs">
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star"></ion-icon>
+                      <ion-icon name="star-outline"></ion-icon>
+                    </div>
                   </div>
-
-                  <div class="price-box">
-                    <p class="price">${{ product.price }}</p>
-                    {% if product.old_price %}
-                    <del>${{ product.old_price }}</del>
-                    {% endif %}
-                  </div>
-
                 </div>
-
               </div>
               {% endfor %}
-
             </div>
-
           </div>
 
         </div>

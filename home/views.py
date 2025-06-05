@@ -42,16 +42,36 @@ def index(request):
 def search_results(request):
     search = request.GET.get('search', '').strip()
     results = []
+    section = request.GET.get('section', '')
 
-    if search:
+    if section:
+        if section == 'new_arrivals':
+            results = Product.objects.filter(is_new=True)
+        elif section == 'trending':
+            results = Product.objects.filter(is_trending=True)
+        elif section == 'top_rated':
+            results = Product.objects.filter(is_top_rated=True)
+        elif section == 'new_products':
+            results = Product.objects.filter(new_prod=True)
+    elif search:
         vector = SearchVector('name', weight='A') + SearchVector('description', weight='B') + SearchVector('category__name', weight='C')
         query = SearchQuery(search)
-
         results = Product.objects.annotate(search=vector).filter(search=query)
+
+    section_names = {
+        'new_arrivals': 'New Arrivals',
+        'trending': 'Trending Products',
+        'top_rated': 'Top Rated Products',
+        'new_products': 'New Products'
+    }
+    
+    section_name = section_names.get(section, 'Search Results')
 
     return render(request, 'search_results.html', {
         'results': results,
         'search': search,
+        'section': section,
+        'section_name': section_name
     })
 
 

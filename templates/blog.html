@@ -40,9 +40,9 @@
     <div id="mobile-menu" class="md:hidden hidden bg-white border-t">
       <div class="px-2 pt-2 pb-3 space-y-1">
         <a href="{% url 'index' %}" class="block px-3 py-2 text-gray-700 hover:text-pink-600">Home</a>
-        {% comment %} <a href="#" class="block px-3 py-2 text-gray-700 hover:text-pink-600">Products</a> {% endcomment %}
-        <a href="#" class="block px-3 py-2 text-pink-600 font-medium">Blog</a>
-        {% comment %} <a href="#" class="block px-3 py-2 text-gray-700 hover:text-pink-600">Contact</a> {% endcomment %}
+        <a href="{% url 'cart' %}" class="block px-3 py-2 text-gray-700 hover:text-pink-600">Cart</a>
+        <a href="{% url 'blog' %}" class="block px-3 py-2 text-pink-600 font-medium">Blog</a>
+        {% comment %} <a href="{% url 'contact' %}" class="block px-3 py-2 text-gray-700 hover:text-pink-600">Contact</a> {% endcomment %}
       </div>
     </div>
   </nav>
