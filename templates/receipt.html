@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt - Order #{{ order.id }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print {
+                display: none;
+            }
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold">Payment Receipt</h1>
+                    <p class="text-sm opacity-80">Order #{{ order.id }}</p>
+                </div>
+                <div class="text-right">
+                    <img src="{% static 'assets/images/logo/favicon.svg' %}" alt="Logo" class="h-12 w-12">
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6 space-y-6">
+            <!-- Customer & Order Info -->
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-2">Customer Details</h3>
+                    <div class="text-gray-800">
+                        <p class="font-medium">{{ order.name }}</p>
+                        <p>{{ order.email }}</p>
+                        <p>{{ order.phone }}</p>
+                        <p class="mt-2">{{ order.address }}</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-gray-500 text-sm font-medium mb-2">Order Details</h3>
+                    <div class="text-gray-800">
+                        <p>Order Date: {{ order.ordered_at|date:"F j, Y" }}</p>
+                        <p>Payment Method: {{ order.payment_method }}</p>
+                        <p>Payment Status: <span class="{% if order.is_paid %}text-green-600{% else %}text-red-600{% endif %}">
+                            {{ order.is_paid|yesno:"Paid,Unpaid" }}
+                        </span></p>
+                        <p>Order Status: {{ order.status }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div>
+                <h3 class="text-gray-500 text-sm font-medium mb-3">Order Items</h3>
+                <div class="border rounded-lg overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Price</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for item in order.items %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ item.product.name }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 text-right">{{ item.quantity }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 text-right">${{ item.price }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 text-right">${{ item.subtotal }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="bg-gray-50">
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 text-sm text-gray-500 text-right font-medium">Subtotal</td>
+                                <td class="px-6 py-4 text-sm text-gray-800 text-right">${{ order.total_price }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 text-sm text-gray-500 text-right font-medium">GST (18%)</td>
+                                <td class="px-6 py-4 text-sm text-gray-800 text-right">${{ gst_amount }}</td>
+                            </tr>
+                            <tr class="font-medium">
+                                <td colspan="3" class="px-6 py-4 text-base text-gray-800 text-right">Total</td>
+                                <td class="px-6 py-4 text-base text-gray-800 text-right">${{ total_with_gst }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="border-t pt-6 mt-6">
+                <div class="text-center text-gray-500 text-sm">
+                    <p>Thank you for shopping with us!</p>
+                    <p class="mt-1">For any queries, please contact support@zeno.com</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Button -->
+    <div class="max-w-3xl mx-auto mt-6 text-center no-print">
+        <button onclick="window.print()" class="bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2 rounded-lg transition-colors">
+            Print Receipt
+        </button>
+    </div>
+</body>
+</html> 

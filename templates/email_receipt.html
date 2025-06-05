@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(to right, #3b82f6, #8b5cf6); color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .order-info { margin-bottom: 20px; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .items-table th, .items-table td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        .items-table th { background-color: #f8f9fa; }
+        .total-row { font-weight: bold; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Order Confirmation</h1>
+            <p>Order #{{ order.id }}</p>
+        </div>
+        
+        <div class="content">
+            <div class="order-info">
+                <h2>Thank you for your order!</h2>
+                <p>Dear {{ order.name }},</p>
+                <p>Your order has been successfully placed. Here are your order details:</p>
+            </div>
+
+            <div class="order-details">
+                <h3>Order Information</h3>
+                <p><strong>Order Date:</strong> {{ order.ordered_at|date:"F j, Y" }}</p>
+                <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+                <p><strong>Shipping Address:</strong><br>
+                {{ order.address }}</p>
+            </div>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.price }}</td>
+                        <td>${{ item.subtotal }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td colspan="3" style="text-align: right;"><strong>Subtotal</strong></td>
+                        <td>${{ order.total_price }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" style="text-align: right;"><strong>GST (18%)</strong></td>
+                        <td>${{ gst_amount }}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="3" style="text-align: right;"><strong>Total</strong></td>
+                        <td>${{ total_with_gst }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="footer">
+                <p>If you have any questions about your order, please contact our support team at support@zeno.com</p>
+                <p>Thank you for shopping with Zeno!</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

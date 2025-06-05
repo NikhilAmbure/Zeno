@@ -16,14 +16,12 @@
       <div class="flex justify-between items-center h-16">
         <div class="flex items-center">
           <img src="{% static 'assets/images/logo/favicon.svg' %}" alt="Logo" class="h-8 w-8" />
-          <span class="ml-2 text-xl font-semibold text-pink-600">Zeno</span>
+          <a href="{% url 'index' %}" class="ml-2 text-2xl font-semibold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">Zeno</a>
         </div>
         <div class="hidden md:flex items-center space-x-8">
           <a href="{% url 'index' %}" class="text-gray-700 hover:text-pink-600 transition duration-200">Home</a>
-          <a href="#" class="text-gray-700 hover:text-pink-600 transition duration-200">Products</a>
-          <a href="#" class="text-gray-700 hover:text-pink-600 transition duration-200">Blog</a>
-          <a href="#" class="text-pink-600 font-medium">My Orders</a>
-          <a href="#" class="text-gray-700 hover:text-pink-600 transition duration-200">Account</a>
+          <a href="{% url 'blog' %}" class="text-gray-700 hover:text-pink-600 transition duration-200">Blog</a>
+          <a href="{% url 'my-orders' %}  " class="text-pink-600 font-medium">My Orders</a>
         </div>
         <div class="md:hidden">
           <button id="mobile-menu-btn" class="text-gray-700 hover:text-pink-600">
@@ -210,14 +208,16 @@
                                 </button>
                                 {% endif %}
                                 
-                                <button class="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-2 px-4 rounded-lg transition duration-200">
+                                <a href="{% url 'generate_receipt' order.order_id %}" target="_blank" 
+                                   class="w-full border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-2 px-4 rounded-lg transition duration-200 block text-center">
                                     View Invoice
-                                </button>
+                                </a>
                                 
                                 {% if order.status == 'Pending' or order.status == 'Confirmed' %}
-                                <button class="w-full border border-red-300 text-red-600 hover:bg-red-50 font-semibold py-2 px-4 rounded-lg transition duration-200">
+                                <a href="{% url 'cancel_order' order.order_id %}" 
+                                   class="w-full border border-red-300 text-red-600 hover:bg-red-50 font-semibold py-2 px-4 rounded-lg transition duration-200 block text-center">
                                     Cancel Order
-                                </button>
+                                </a>
                                 {% endif %}
                             </div>
                         </div>

@@ -119,7 +119,7 @@ class Order(models.Model):
     phone = models.CharField(max_length=20, default="0000000000000000")
     address = models.TextField(default='Not Provided')
 
-    items = models.ManyToManyField(CartItem)
+    # items = models.ManyToManyField(CartItem)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES)
     is_paid = models.BooleanField(default=False)
@@ -145,6 +145,19 @@ class Order(models.Model):
         """Get human-readable status"""
         return dict(self.STATUS_CHOICES).get(self.status, self.status)
 
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name} (Order #{self.order.id})"
+    
+    @property
+    def subtotal(self):
+        return self.price * self.quantity
 
 class WishlistItem(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

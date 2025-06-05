@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(to right, #ef4444, #dc2626); color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .order-info { margin-bottom: 20px; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .items-table th, .items-table td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        .items-table th { background-color: #f8f9fa; }
+        .total-row { font-weight: bold; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+        .refund-info { background-color: #f9fafb; padding: 15px; border-radius: 5px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Order Cancellation Confirmation</h1>
+            <p>Order #{{ order.id }}</p>
+        </div>
+        
+        <div class="content">
+            <div class="order-info">
+                <h2>Order Cancelled Successfully</h2>
+                <p>Dear {{ order.name }},</p>
+                <p>Your order has been cancelled as requested. Here are the details of your cancelled order:</p>
+            </div>
+
+            <div class="order-details">
+                <h3>Order Information</h3>
+                <p><strong>Order Date:</strong> {{ order.ordered_at|date:"F j, Y" }}</p>
+                <p><strong>Cancellation Date:</strong> {{ cancellation_date|date:"F j, Y" }}</p>
+                <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+            </div>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items %}
+                    <tr>
+                        <td>{{ item.product.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.price }}</td>
+                        <td>${{ item.subtotal }}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td colspan="3" style="text-align: right;"><strong>Total Amount</strong></td>
+                        <td>${{ order.total_price }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="refund-info">
+                {% if order.payment_method != 'COD' %}
+                <h3>Refund Information</h3>
+                <p>Your payment of ${{ order.total_price }} will be refunded to your original payment method within 5-7 business days.</p>
+                {% endif %}
+            </div>
+
+            <div class="footer">
+                <p>If you have any questions about your order cancellation, please contact our support team at support@zeno.com</p>
+                <p>We hope to serve you again soon!</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

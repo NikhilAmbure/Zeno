@@ -1,14 +1,15 @@
 from django.shortcuts import render,HttpResponse, redirect, get_object_or_404
 from django.core.cache import cache
 from django.contrib import messages
-from .emailer import sendOTPToEmail
+from .emailer import sendOTPToEmail, send_order_receipt, send_order_cancellation_email
 import random
 from django.contrib.auth import get_user_model, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser, Product, CartItem, Order, WishlistItem
+from .models import CustomUser, Product, CartItem, OrderItem, Order, WishlistItem
 from django.contrib.postgres.search import (SearchQuery, SearchVector, SearchRank, TrigramSimilarity)
 from django.db.models import Q
 from decimal import Decimal
+from django.utils import timezone
 
 # Gets the custom user model
 User = get_user_model()
@@ -19,9 +20,9 @@ User = get_user_model()
 @login_required(login_url='/login/')
 def index(request):
 
-    new_arrivals = Product.objects.filter(is_new=True)[:4]
-    trending = Product.objects.filter(is_trending=True)[:4]
-    top_rated = Product.objects.filter(is_top_rated=True)[:4]
+    new_arrivals = Product.objects.filter(is_new=True)[:6]
+    trending = Product.objects.filter(is_trending=True)[:6]
+    top_rated = Product.objects.filter(is_top_rated=True)[:6]
     dotd = Product.objects.filter(dotd=True)[:2]
     new_products = Product.objects.filter(new_prod=True)[:12]
     best_sellers = Product.objects.filter(best_sellers=True)[:6]
@@ -347,7 +348,7 @@ def checkout_page(request):
     cart_items = []
 
     for product in products:
-        quantity = int(cart[str(product.id)])  # Ensure quantity is integer
+        quantity = int(cart[str(product.id)])
         subtotal = product.price * quantity
         total_price += subtotal
         cart_items.append({
@@ -362,48 +363,34 @@ def checkout_page(request):
     total_with_gst = total_price + gst_amount
 
     if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        phone = request.POST.get('phone')
-        address = request.POST.get('address')
-
-        # Create order FIRST
+        # Create order directly from session cart
         order = Order.objects.create(
             user=request.user,
             total_price=total_with_gst,
-            payment_method='COD',  # Temporary is COD
+            payment_method='COD',  # Default to COD, will update in payment method selection
             is_paid=False,
-            name=name,
-            email=email,
-            phone=phone,
-            address=address
+            name=request.POST.get('name'),
+            email=request.POST.get('email'),
+            phone=request.POST.get('phone'),
+            address=request.POST.get('address'),
+            status='pending'
         )
 
-        # Clear old CartItems for this user 
-        CartItem.objects.filter(user=request.user).delete()
-
-        # Create CartItem objects and associate with order
-        saved_items = []
+        # Create order items directly without using CartItem model
         for item in cart_items:
-            cart_item = CartItem.objects.create(
-                user=request.user,
+            OrderItem.objects.create(
+                order=order,
                 product=item['product'],
-                quantity=item['quantity']
+                quantity=item['quantity'],
+                price=item['product'].price
             )
-            saved_items.append(cart_item)
-
-        # Associate CartItems with the order AFTER both are saved
-        order.items.set(saved_items)
 
         # Clear the cart after successful order creation
         request.session['cart'] = {}
+        request.session['order_id'] = str(order.id)
         request.session.modified = True
-
-        # Save order id for payment processing
-        request.session['order_id'] = order.id
         
         messages.success(request, f'Order #{order.id} created successfully!')
-        
         return redirect('select_payment_method')
 
     return render(request, 'checkout.html', {
@@ -415,47 +402,65 @@ def checkout_page(request):
     })
 
 
-
+# In your views.py
+@login_required
 def select_payment_method(request):
+    order_id = request.session.get('order_id')
+    if not order_id:
+        messages.error(request, 'No order found. Please start checkout again.')
+        return redirect('cart')
+    
+    try:
+        order = Order.objects.get(id=order_id, user=request.user)
+    except Order.DoesNotExist:
+        messages.error(request, 'Invalid order. Please start checkout again.')
+        return redirect('cart')
+    
     return render(request, 'select_payment_method.html')
 
 
 def razorpay_payment(request):
     return render(request, 'razorpay.html')
 
-@login_required(login_url='/login/')
+@login_required
 def place_order_cod(request):
-    if request.method != 'POST':
-        messages.error(request, 'Invalid request method')
-        return redirect('select_payment_method')
+    if request.method == 'POST':
+        order_id = request.session.get('order_id')
+        if not order_id:
+            messages.error(request, 'No order found in session')
+            return redirect('cart')
 
-    order_id = request.session.get('order_id')
-    if not order_id:
-        messages.error(request, 'No order found')
-        return redirect('cart')
+        try:
+            order = Order.objects.get(id=order_id, user=request.user)
+            order.status = 'confirmed'
+            order.payment_method = 'COD'
+            order.save()
 
-    try:
-        order = Order.objects.get(id=order_id, user=request.user)
-        
-        # Update order status and payment method
-        order.status = 'confirmed'
-        order.payment_method = 'COD'
-        order.save()
+            # Send order receipt email
+            try:
+                send_order_receipt(order)
+                messages.success(request, 'Order confirmation email sent!')
+            except Exception as e:
+                messages.warning(request, 'Order placed but email could not be sent.')
 
-        # Clear session data
-        if 'order_id' in request.session:
-            del request.session['order_id']
-        request.session.modified = True
+            # Clear session
+            if 'order_id' in request.session:
+                del request.session['order_id']
+            if 'cart' in request.session:
+                del request.session['cart']
+            request.session.modified = True
 
-        messages.success(request, 'Your order has been placed successfully! You can track it in My Orders.')
-        return redirect('my-orders')
+            messages.success(request, f'Order #{order.id} placed successfully!')
+            return redirect('my-orders')
 
-    except Order.DoesNotExist:
-        messages.error(request, 'Order not found')
-        return redirect('cart')
-    except Exception as e:
-        messages.error(request, f'Error processing order: {str(e)}')
-        return redirect('cart')
+        except Order.DoesNotExist:
+            messages.error(request, 'Order not found in database')
+            return redirect('cart')
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+            return redirect('cart')
+
+    return redirect('select_payment_method')
 
 def blog_view(request):
     return render(request, 'blog.html')
@@ -464,50 +469,42 @@ def blog_view(request):
 
 @login_required(login_url='/login/')
 def my_orders(request):
-    """View to display user's orders with all required data for template"""
-    
-    # Get all orders for the current user
     orders = Order.objects.filter(user=request.user).order_by('-ordered_at')
     
-    # Calculate totals for hero section
     total_orders = orders.count()
     total_spent = sum(order.total_price for order in orders)
     
-    # Prepare orders data for template
     orders_data = []
     
     for order in orders:
-        # Get all cart items for this order
-        cart_items = order.items.all()
+        order_items = order.order_items.all()
         
-        # Prepare items data
         items_data = []
         total_items = 0
         
-        for item in cart_items:
+        for item in order_items:
             items_data.append({
                 'product': item.product,
                 'quantity': item.quantity,
-                'price': item.product.price,
-                'subtotal': item.total_price,  # This uses the property from CartItem model
+                'price': item.price,
+                'subtotal': item.subtotal,
             })
             total_items += item.quantity
         
-        # Prepare order data
         order_data = {
             'order_id': order.id,
-            'status': order.status.title(),  
+            'status': order.status.title(),
             'ordered_at': order.ordered_at,
             'items': items_data,
             'total_items': total_items,
             'payment_method': dict(Order.PAYMENT_CHOICES).get(order.payment_method, order.payment_method),
             'is_paid': order.is_paid,
             'total_price': order.total_price,
-            'shipping_address': order.address,  # Using the address field from Order model
+            'shipping_address': order.address,
             'name': order.name,
             'email': order.email,
             'phone': order.phone,
-            'tracking_number': getattr(order, 'tracking_number', None),
+            'tracking_number': order.tracking_number,
         }
         
         orders_data.append(order_data)
@@ -519,3 +516,52 @@ def my_orders(request):
     }
     
     return render(request, 'my_orders.html', context)
+
+
+# Invoice
+@login_required(login_url='/login/')
+def generate_receipt(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    # Calculate GST and total with GST
+    gst_rate = Decimal('0.18')
+    gst_amount = (order.total_price * gst_rate).quantize(Decimal('0.01'))
+    total_with_gst = order.total_price + gst_amount
+    
+    context = {
+        'order': order,
+        'gst_amount': gst_amount,
+        'total_with_gst': total_with_gst,
+    }
+    
+    return render(request, 'receipt.html', context)
+
+@login_required(login_url='/login/')
+def cancel_order(request, order_id):
+    if request.method == 'POST':
+        order = get_object_or_404(Order, id=order_id, user=request.user)
+        
+        # Check if order can be cancelled
+        if order.status not in ['pending', 'confirmed']:
+            messages.error(request, 'This order cannot be cancelled.')
+            return redirect('my-orders')
+        
+        try:
+            # Update order status
+            order.status = 'cancelled'
+            order.save()
+            
+            # Send cancellation email
+            cancellation_date = timezone.now()
+            send_order_cancellation_email(order, cancellation_date)
+            
+            messages.success(request, f'Order #{order.id} has been cancelled successfully. A confirmation email has been sent.')
+            
+        except Exception as e:
+            messages.error(request, f'Error cancelling order: {str(e)}')
+        
+        return redirect('my-orders')
+    
+    # If GET request, show confirmation page
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, 'confirm_cancellation.html', {'order': order})

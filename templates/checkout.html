@@ -65,7 +65,7 @@
         
         <!-- Left side - Shipping form (takes 2 columns on desktop) -->
         <div class="lg:col-span-2">
-          <form method="POST" action="{% url 'select_payment_method' %}" class="space-y-6">
+          <form method="POST" action="{% url 'checkout' %}" class="space-y-6">
             {% csrf_token %}
             
             <!-- Shipping Information Card -->

@@ -2,6 +2,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <style>
+  /* Header-specific styles */
+  .header-main {
+    position: sticky;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .header-search-container form {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .header-search-container .search-field {
+    width: 100%;
+    padding: 12px 20px;
+    padding-right: 50px;
+    border: 2px solid #e5e7eb;
+    border-radius: 9999px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background-color: #f9fafb;
+  }
+
+  .header-search-container .search-field:focus {
+    outline: none;
+    border-color: #EC4899;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
+  }
+
+  .header-search-container .search-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    padding: 8px;
+    color: #6B7280;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .header-search-container .search-btn:hover {
+    color: #EC4899;
+    background-color: #FDF2F8;
+  }
+
+  .header-user-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .header-user-actions .action-btn {
+    position: relative;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+
+  .header-user-actions .action-btn:hover {
+    background-color: #FDF2F8;
+    transform: translateY(-2px);
+  }
+
+  .header-user-actions .count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #EC4899;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 12px;
+    border: 2px solid white;
+  }
+
+  @media (max-width: 768px) {
+    .header-search-container {
+      order: 3;
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    .header-main .container {
+      flex-wrap: wrap;
+    }
+  }
+
   .dropdown {
     position: relative;
     display: inline-block;
@@ -33,6 +131,11 @@
 
   .dropdown:hover .dropdown-content {
     display: block;
+  }
+
+  /* Add some padding to prevent content jump */
+  .header-main + * {
+    padding-top: 1rem;
   }
 </style>
 
@@ -160,128 +263,126 @@
   -->
 
   <header>
-
-    <div class="header-top">
-
+    <div class="header-top bg-gradient-to-r from-pink-50 to-purple-50">
       <div class="container">
-
         <ul class="header-social-container">
-
           <li>
-            <a href="#" class="social-link">
+            <a href="#" class="social-link hover:text-pink-500 transition-all duration-200">
               <ion-icon name="logo-facebook"></ion-icon>
             </a>
           </li>
-
           <li>
-            <a href="https://x.com/N1kh1l_A0" class="social-link" target="_blank">
+            <a href="https://x.com/N1kh1l_A0" class="social-link hover:text-pink-500 transition-all duration-200" target="_blank">
               <ion-icon name="logo-twitter"></ion-icon>
             </a>
           </li>
-
           <li>
-            <a href="#" class="social-link">
+            <a href="#" class="social-link hover:text-pink-500 transition-all duration-200">
               <ion-icon name="logo-instagram"></ion-icon>
             </a>
           </li>
-
           <li>
-            <a href="https://www.linkedin.com/in/nikhil-ambure-8a41a7248/" class="social-link" target="_blank">
+            <a href="https://www.linkedin.com/in/nikhil-ambure-8a41a7248/" class="social-link hover:text-pink-500 transition-all duration-200" target="_blank">
               <ion-icon name="logo-linkedin"></ion-icon>
             </a>
           </li>
-
         </ul>
 
         <div class="header-alert-news">
-          <p>
-            <b>Free Shipping</b>
+          <p class="text-sm">
+            <b class="text-pink-500">Free Shipping</b>
             This Week Order Over - $55
           </p>
         </div>
 
         <div class="header-top-actions">
         </div>
-
       </div>
-
     </div>
 
     <div class="header-main">
-
       <div class="container">
-
-        <div class="flex items-center">
-          <img src="{% static 'assets/images/logo/favicon.svg' %}" alt="Logo" class="h-8 w-8" />
-          <a href="{% url 'index' %}" class="ml-2 text-2xl font-semibold text-pink-600">Zeno</a>
-        </div>
-
-        <div class="header-search-container">
-
-          <form method="get" action="{% url 'search_results' %}">
-              <input type="text" value="{% if search%} {{search}} {% endif %}" name="search" class="search-field" placeholder="Enter your product name...">
-              <button type= "submit" class="search-btn">
-                <ion-icon name="search-outline"></ion-icon>
-              </button>
-          </form>
-
-        </div>
-
-
-        {% comment %} *************Added ---> edit profile , login, logout**************  {% endcomment %}
-        <div class="header-user-actions">
-
-          <div class="dropdown">
-            <button class="action-btn">
-              <ion-icon name="person-outline"></ion-icon>
-            </button>
-            <div class="dropdown-content">
-              <a href="{% url 'edit-profile' %}">Edit Profile</a>
-              <a href="{% url 'my-orders' %}">My Orders</a>
-              {% if user.is_authenticated %}
-                <a href="{% url 'logout' %}">Logout</a>
-              {% else %}
-                <a href="{% url 'login' %}">Login</a>
-              {% endif %}
-            </div>
+        <div class="flex items-center justify-between w-full">
+          <!-- Logo Section -->
+          <div class="flex items-center space-x-2">
+            <img src="{% static 'assets/images/logo/favicon.svg' %}" alt="Logo" class="h-10 w-10" />
+            <a href="{% url 'index' %}" class="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+              Zeno
+            </a>
           </div>
 
-          <a href="{% url 'wishlist' %}" class="action-btn">
-            <ion-icon name="heart-outline"></ion-icon>
-          </a>
+          <!-- Search Section -->
+          <div class="header-search-container flex-1 mx-8">
+            <form method="get" action="{% url 'search_results' %}" class="relative">
+              <input type="text" 
+                     name="search" 
+                     value="{% if search %}{{ search }}{% endif %}" 
+                     class="search-field" 
+                     placeholder="Search for products..."
+                     autocomplete="off">
+              <button type="submit" class="search-btn">
+                <ion-icon name="search-outline" class="text-xl"></ion-icon>
+              </button>
+            </form>
+          </div>
 
-          {% comment %} ************Showing cart count on icon************ {% endcomment %}
-          <a href="{% url 'cart' %}" class="action-btn">
-            <ion-icon name="bag-handle-outline"></ion-icon>
-            <span class="count">{{ cart_count }}</span>
-          </a>
+          <!-- User Actions -->
+          <div class="header-user-actions">
+            <div class="relative group">
+              <button class="action-btn group-hover:text-pink-500 transition-all duration-200">
+                <ion-icon name="person-outline" class="text-xl"></ion-icon>
+              </button>
+              <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-y-0 translate-y-2">
+                <a href="{% url 'edit-profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-500 transition-colors flex items-center gap-2">
+                  <ion-icon name="create-outline"></ion-icon>
+                  Edit Profile
+                </a>
+                <a href="{% url 'my-orders' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-500 transition-colors flex items-center gap-2">
+                  <ion-icon name="bag-check-outline"></ion-icon>
+                  My Orders
+                </a>
+                {% if user.is_authenticated %}
+                  <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-500 transition-colors flex items-center gap-2">
+                    <ion-icon name="log-out-outline"></ion-icon>
+                    Logout
+                  </a>
+                {% else %}
+                  <a href="{% url 'login' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-pink-50 hover:text-pink-500 transition-colors flex items-center gap-2">
+                    <ion-icon name="log-in-outline"></ion-icon>
+                    Login
+                  </a>
+                {% endif %}
+              </div>
+            </div>
 
+            <a href="{% url 'wishlist' %}" class="action-btn hover:text-pink-500 transition-all duration-200">
+              <ion-icon name="heart-outline" class="text-xl"></ion-icon>
+              {% if wishlist_count > 0 %}
+                <span class="count">{{ wishlist_count }}</span>
+              {% endif %}
+            </a>
 
+            <a href="{% url 'cart' %}" class="action-btn hover:text-pink-500 transition-all duration-200">
+              <ion-icon name="bag-handle-outline" class="text-xl"></ion-icon>
+              <span class="count">{{ cart_count }}</span>
+            </a>
+          </div>
         </div>
-
-
-
       </div>
-
     </div>
 
     <nav class="desktop-navigation-menu">
-
       <div class="container">
-
         <ul class="desktop-menu-category-list">
-
           <li class="menu-category">
-            <a href="{% url 'index' %}" class="menu-title">Home</a>
+            <a href="{% url 'index' %}" class="menu-title hover:text-pink-500 transition-colors duration-200">Home</a>
           </li>
 
           <li class="menu-category">
-            <a href="#" class="menu-title">Categories</a>
+            <a href="#" class="menu-title hover:text-pink-500 transition-colors duration-200">Categories</a>
 
             <div class="dropdown-panel">
-
               <ul class="dropdown-panel-list">
-
                 <li class="menu-title">
                   <a href="#">Electronics</a>
                 </li>
@@ -308,15 +409,12 @@
 
                 <li class="panel-list-item">
                   <a href="#">
-                    <img src="{% static "assets/images/electronics-banner-1.jpg" %}" alt="headphone collection" width="250"
-                      height="119">
+                    <img src="{% static "assets/images/electronics-banner-1.jpg" %}" alt="headphone collection" width="250" height="119">
                   </a>
                 </li>
-
               </ul>
 
               <ul class="dropdown-panel-list">
-
                 <li class="menu-title">
                   <a href="#">Men's</a>
                 </li>
@@ -346,11 +444,9 @@
                     <img src="{% static "assets/images/mens-banner.jpg" %}" alt="men's fashion" width="250" height="119">
                   </a>
                 </li>
-
               </ul>
 
               <ul class="dropdown-panel-list">
-
                 <li class="menu-title">
                   <a href="#">Women's</a>
                 </li>
@@ -380,11 +476,9 @@
                     <img src="{% static "assets/images/womens-banner.jpg" %}" alt="women's fashion" width="250" height="119">
                   </a>
                 </li>
-
               </ul>
 
               <ul class="dropdown-panel-list">
-
                 <li class="menu-title">
                   <a href="#">Electronics</a>
                 </li>
@@ -414,17 +508,14 @@
                     <img src="{% static "assets/images/electronics-banner-2.jpg" %}" alt="mouse collection" width="250" height="119">
                   </a>
                 </li>
-
               </ul>
-
             </div>
           </li>
 
           <li class="menu-category">
-            <a href="#" class="menu-title">Men's</a>
+            <a href="#" class="menu-title hover:text-pink-500 transition-colors duration-200">Men's</a>
 
             <ul class="dropdown-list">
-
               <li class="dropdown-item">
                 <a href="{% url 'search_results' %}?search=Shirt">Shirt</a>
               </li>
@@ -440,15 +531,13 @@
               <li class="dropdown-item">
                 <a href="{% url 'search_results' %}?search=Wallet">Wallet</a>
               </li>
-
             </ul>
           </li>
 
           <li class="menu-category">
-            <a href="#" class="menu-title">Women's</a>
+            <a href="#" class="menu-title hover:text-pink-500 transition-colors duration-200">Women's</a>
 
             <ul class="dropdown-list">
-
               <li class="dropdown-item">
                 <a href="{% url 'search_results' %}?search={{ 'Dress & Frock'|urlencode }}">Dress & Frock</a>
               </li>
@@ -464,15 +553,13 @@
               <li class="dropdown-item">
                 <a href="{% url 'search_results' %}?search={{ 'Makeup Kit'|urlencode }}">Makeup Kit</a>
               </li>
-
             </ul>
           </li>
 
           <li class="menu-category">
-            <a href="#" class="menu-title">Jewelry</a>
+            <a href="#" class="menu-title hover:text-pink-500 transition-colors duration-200">Jewelry</a>
 
             <ul class="dropdown-list">
-
               <li class="dropdown-item">
                 <a href="{% url 'search_results' %}?search=Earrings">Earrings</a>
               </li>
@@ -488,15 +575,13 @@
               <li class="dropdown-item">
                 <a href="{% url 'search_results' %}?search=Bracelets">Bracelets</a>
               </li>
-
             </ul>
           </li>
 
           <li class="menu-category">
-            <a href="#" class="menu-title">Perfume</a>
+            <a href="#" class="menu-title hover:text-pink-500 transition-colors duration-200">Perfume</a>
 
             <ul class="dropdown-list">
-
               <li class="dropdown-item">
                 <a href="{% url 'search_results' %}?search={{ 'Clothes Perfume'|urlencode }}">Clothes Perfume</a>
               </li>
@@ -512,291 +597,59 @@
               <li class="dropdown-item">
                 <a href="{% url 'search_results' %}?search={{ 'Air Freshener'|urlencode }}">Air Freshener</a>
               </li>
-
             </ul>
           </li>
 
           <li class="menu-category">
-            <a href="{% url 'blog' %}" class="menu-title">Blog</a>
+            <a href="{% url 'blog' %}" class="menu-title hover:text-pink-500 transition-colors duration-200">Blog</a>
           </li>
 
           <li class="menu-category">
-            <a href="#" class="menu-title">Hot Offers</a>
+            <a href="#" class="menu-title hover:text-pink-500 transition-colors duration-200">Hot Offers</a>
           </li>
-
         </ul>
-
       </div>
-
     </nav>
 
     <div class="mobile-bottom-navigation">
-
-      <button class="action-btn" data-mobile-menu-open-btn>
-        <ion-icon name="menu-outline"></ion-icon>
-      </button>
-
-      <a href={% url 'cart' %} class="action-btn">
-        <ion-icon name="bag-handle-outline"></ion-icon>
-
-        <span class="count">{{ cart_count }}</span>
+      {% if user.is_authenticated %}
+      <a href="{% url 'edit-profile' %}" class="action-btn">
+        <ion-icon name="person-outline"></ion-icon>
       </a>
 
-      <a href='{% url 'index'%}' class="action-btn">
+      <a href="{% url 'my-orders' %}" class="action-btn">
+        <ion-icon name="bag-check-outline"></ion-icon>
+      </a>
+      {% else %}
+      <a href="{% url 'login' %}" class="action-btn">
+        <ion-icon name="log-in-outline"></ion-icon>
+      </a>
+      {% endif %}
+
+      <a href='{% url 'index' %}' class="action-btn">
         <ion-icon name="home-outline"></ion-icon>
       </a>
 
-      <a href='{% url 'wishlist' %}' class="action-btn">
-        <ion-icon name="heart-outline"></ion-icon>
+      <a href='{% url 'cart' %}' class="action-btn">
+        <ion-icon name="bag-handle-outline"></ion-icon>
+        <span class="count">{{ cart_count }}</span>
+      </a>
 
-        <span class="count">0</span>
-      </button>
-
-      {% comment %} <a class="action-btn" data-mobile-menu-open-btn>
-        <ion-icon name="grid-outline"></ion-icon>
-      </a>  {% endcomment %}
-
+      {% if user.is_authenticated %}
+      <a href="{% url 'logout' %}" class="action-btn">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </a>
+      {% endif %}
     </div>
 
-    <nav class="mobile-navigation-menu  has-scrollbar" data-mobile-menu>
-
+    <nav class="mobile-navigation-menu has-scrollbar" data-mobile-menu>
       <div class="menu-top">
         <h2 class="menu-title">Menu</h2>
-
         <button class="menu-close-btn" data-mobile-menu-close-btn>
           <ion-icon name="close-outline"></ion-icon>
         </button>
       </div>
-
-      <ul class="mobile-menu-category-list">
-
-        <li class="menu-category">
-          <a href="{% url 'index' %}" class="menu-title">Home</a>
-        </li>
-
-        <li class="menu-category">
-
-          <button class="accordion-menu" data-accordion-btn>
-            <p class="menu-title">Men's</p>
-
-            <div>
-              <ion-icon name="add-outline" class="add-icon"></ion-icon>
-              <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
-            </div>
-          </button>
-
-          <ul class="submenu-category-list" data-accordion>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Shirt" class="submenu-title">Shirt</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Jeans" class="submenu-title">Shorts & Jeans</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Shoes" class="submenu-title">Safety Shoes</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Wallet" class="submenu-title">Wallet</a>
-            </li>
-
-          </ul>
-
-        </li>
-
-        <li class="menu-category">
-
-          <button class="accordion-menu" data-accordion-btn>
-            <p class="menu-title">Women's</p>
-
-            <div> 
-              <ion-icon name="add-outline" class="add-icon"></ion-icon>
-              <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
-            </div>
-          </button>
-
-          <ul class="submenu-category-list" data-accordion>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Dress" class="submenu-title">Dress & Frock</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Earrings" class="submenu-title">Earrings</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Necklace" class="submenu-title">Necklace</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Makeup" class="submenu-title">Makeup Kit</a>
-            </li>
-
-          </ul>
-
-        </li>
-
-        <li class="menu-category">
-
-          <button class="accordion-menu" data-accordion-btn>
-            <p class="menu-title">Jewelry</p>
-
-            <div>
-              <ion-icon name="add-outline" class="add-icon"></ion-icon>
-              <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
-            </div>
-          </button>
-
-          <ul class="submenu-category-list" data-accordion>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Earrings" class="submenu-title">Earrings</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Rings" class="submenu-title">Couple Rings</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Necklace" class="submenu-title">Necklace</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Bracelets" class="submenu-title">Bracelets</a>
-            </li>
-
-          </ul>
-
-        </li>
-
-        <li class="menu-category">
-
-          <button class="accordion-menu" data-accordion-btn>
-            <p class="menu-title">Perfume</p>
-
-            <div>
-              <ion-icon name="add-outline" class="add-icon"></ion-icon>
-              <ion-icon name="remove-outline" class="remove-icon"></ion-icon>
-            </div>
-          </button>
-
-          <ul class="submenu-category-list" data-accordion>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Perfume" class="submenu-title">Clothes Perfume</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Deodorant" class="submenu-title">Deodorant</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Flower%20Fragrance" class="submenu-title">Flower Fragrance</a>
-            </li>
-
-            <li class="submenu-category">
-              <a href="{% url 'search_results' %}?search=Air%20Freshener" class="submenu-title">Air Freshener</a>
-            </li>
-
-          </ul>
-
-        </li>
-
-        <li class="menu-category">
-          <a href="{% url 'blog' %}" class="menu-title">Blog</a>
-        </li>
-
-        <li class="menu-category">
-          <a href="{% url 'search_results' %}?search=Offers" class="menu-title">Hot Offers</a>
-        </li>
-
-      </ul>
-
-      <div class="menu-bottom">
-
-        <ul class="menu-category-list">
-
-          <li class="menu-category">
-
-            <button class="accordion-menu" data-accordion-btn>
-              <p class="menu-title">Language</p>
-
-              <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
-            </button>
-
-            <ul class="submenu-category-list" data-accordion>
-
-              <li class="submenu-category">
-                <a href="#" class="submenu-title">English</a>
-              </li>
-
-              <li class="submenu-category">
-                <a href="#" class="submenu-title">Espa&ntilde;ol</a>
-              </li>
-
-              <li class="submenu-category">
-                <a href="#" class="submenu-title">Fren&ccedil;h</a>
-              </li>
-
-            </ul>
-
-          </li>
-
-          <li class="menu-category">
-            <button class="accordion-menu" data-accordion-btn>
-              <p class="menu-title">Currency</p>
-              <ion-icon name="caret-back-outline" class="caret-back"></ion-icon>
-            </button>
-
-            <ul class="submenu-category-list" data-accordion>
-              <li class="submenu-category">
-                <a href="#" class="submenu-title">USD &dollar;</a>
-              </li>
-
-              <li class="submenu-category">
-                <a href="#" class="submenu-title">EUR &euro;</a>
-              </li>
-            </ul>
-          </li>
-
-        </ul>
-
-        <ul class="menu-social-container">
-
-          <li>
-            <a href="#" class="social-link">
-              <ion-icon name="logo-facebook"></ion-icon>
-            </a>
-          </li>
-
-          <li>
-            <a href="https://x.com/N1kh1l_A0" class="social-link" target="_blank">
-              <ion-icon name="logo-twitter"></ion-icon>
-            </a>
-          </li>
-
-          <li>
-            <a href="#" class="social-link">
-              <ion-icon name="logo-instagram"></ion-icon>
-            </a>
-          </li>
-
-          <li>
-            <a href="https://www.linkedin.com/in/nikhil-ambure-8a41a7248/" class="social-link" target="_blank">
-              <ion-icon name="logo-linkedin"></ion-icon>
-            </a>
-          </li>
-
-        </ul>
-
-      </div>
-
     </nav>
-
   </header>
 
 
@@ -1504,164 +1357,201 @@
 
           <div class="product-minimal">
 
-            {% comment %} ********New Arrivals********* {% endcomment %}
+            <!-- New Arrivals Section -->
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+              <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center border-b pb-3">
+                <span class="bg-gradient-to-r from-pink-500 to-rose-500 w-1 h-6 rounded mr-3"></span>
+                New Arrivals
+                <a href="#" class="ml-auto text-sm font-medium text-pink-500 hover:text-pink-600 flex items-center">
+                  View All
+                  <ion-icon name="arrow-forward-outline" class="ml-1"></ion-icon>
+                </a>
+              </h2>
 
-            <div class="product-showcase">
-
-              <h2 class="title">New Arrivals</h2>
-
-              <div class="showcase-wrapper has-scrollbar">
-
-                <div class="showcase-container">
-                  
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   {% for product in new_arrivals %}
-
-                  <div class="showcase">
-
-                    <a href="{% url 'product_detail' product.id %}" class="showcase-img-box">
-                      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="showcase-img" width="70" />
-                    </a>
-
-                    <div class="showcase-content">
-
-                      <a href="{% url 'product_detail' product.id %}"><h4 class="showcase-title">{{ product.name }}</h4></a>
-
-                      <a href="{% url 'product_detail' product.id %}" class="showcase-category">{{ product.category.name }}</a>
-
-                      <div class="price-box">
-                        <p class="price">${{ product.price }}</p>
-                        {% if product.old_price %}
-                          <del>${{ product.old_price }}</del>
-                        {% endif %}
-                      </div>
-
-                      <!--  Cart Button -->
-                      <form method="POST" action="{% url 'add_to_cart' product.id %}" class="mt-3">
+                <div class="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100">
+                  <a href="{% url 'product_detail' product.id %}" class="block relative group">
+                    <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-100">
+                      <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                           class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    {% if product.is_new %}
+                      <span class="absolute top-2 right-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-2 py-1 rounded-full text-xs font-medium">New</span>
+                    {% endif %}
+                    <!-- Quick action buttons -->
+                    <div class="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                      <form method="POST" action="{% url 'add_to_cart' product.id %}" class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                         {% csrf_token %}
-                        <button type="submit"
-                          class="bg-[#FA8072] text-black border border-[#FA8072] px-2 py-1 rounded 
-                                hover:bg-black hover:text-white transition-colors duration-300
-                                text-xs font-medium">
-                          Add to Cart
+                        <button type="submit" class="bg-white text-gray-800 p-2 rounded-full hover:bg-pink-500 hover:text-white transition-colors">
+                          <ion-icon name="cart-outline" class="text-lg"></ion-icon>
+                        </button>
+                      </form>
+                      <form method="POST" action="{% url 'add_to_wishlist' product.id %}" class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-white text-gray-800 p-2 rounded-full hover:bg-pink-500 hover:text-white transition-colors">
+                          <ion-icon name="heart-outline" class="text-lg"></ion-icon>
                         </button>
                       </form>
                     </div>
+                  </a>
 
+                  <div class="p-3">
+                    <a href="{% url 'product_detail' product.id %}" class="block">
+                      <h3 class="text-sm font-medium text-gray-800 hover:text-pink-500 transition-colors truncate">{{ product.name }}</h3>
+                    </a>
+                    <p class="text-xs text-gray-500 mb-1">{{ product.category.name }}</p>
+                    
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-sm font-bold text-gray-800">${{ product.price }}</span>
+                        {% if product.old_price %}
+                          <span class="text-xs text-gray-400 line-through">${{ product.old_price }}</span>
+                        {% endif %}
+                      </div>
+                      <div class="flex text-amber-400 text-xs">
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                    </div>
+                    </div>
+                  </div>
                   </div>
                   {% endfor %}
-
                 </div>
-
               </div>
 
-            </div>
-            
-            {% comment %} *******Trending********** {% endcomment %}
-            <div class="product-showcase">
+            <!-- Trending Section -->
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+              <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center border-b pb-3">
+                <span class="bg-gradient-to-r from-purple-500 to-indigo-500 w-1 h-6 rounded mr-3"></span>
+                Trending
+                <a href="#" class="ml-auto text-sm font-medium text-purple-500 hover:text-purple-600 flex items-center">
+                  View All
+                  <ion-icon name="arrow-forward-outline" class="ml-1"></ion-icon>
+                </a>
+              </h2>
 
-              <h2 class="title">Trending</h2>
-
-              <div class="showcase-wrapper has-scrollbar">
-
-                <div class="showcase-container">
-                  
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   {% for product in trending %}
-
-                  <div class="showcase">
-
-                    <a href="{% url 'product_detail' product.id %}" class="showcase-img-box">
-                      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="showcase-img" width="70" />
-                    </a>
-
-                    <div class="showcase-content">
-
-                      <a href="{% url 'product_detail' product.id %}"><h4 class="showcase-title">{{ product.name }}</h4></a>
-
-                      <a href="{% url 'product_detail' product.id %}" class="showcase-category">{{ product.category.name }}</a>
-
-                      <div class="price-box">
-                        <p class="price">${{ product.price }}</p>
-                        {% if product.old_price %}
-                          <del>${{ product.old_price }}</del>
-                        {% endif %}
-                      </div>
-
-                      <!--  Cart Button -->
-                      <form method="POST" action="{% url 'add_to_cart' product.id %}" class="mt-3">
+                <div class="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100">
+                  <a href="{% url 'product_detail' product.id %}" class="block relative group">
+                    <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-100">
+                      <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                           class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    <span class="absolute top-2 right-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-2 py-1 rounded-full text-xs font-medium">Trending</span>
+                    <!-- Quick action buttons -->
+                    <div class="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                      <form method="POST" action="{% url 'add_to_cart' product.id %}" class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                         {% csrf_token %}
-                        <button type="submit"
-                          class="bg-[#FA8072] text-black border border-[#FA8072] px-2 py-1 rounded 
-                                hover:bg-black hover:text-white transition-colors duration-300
-                                text-xs font-medium">
-                          Add to Cart
+                        <button type="submit" class="bg-white text-gray-800 p-2 rounded-full hover:bg-purple-500 hover:text-white transition-colors">
+                          <ion-icon name="cart-outline" class="text-lg"></ion-icon>
                         </button>
                       </form>
-
+                      <form method="POST" action="{% url 'add_to_wishlist' product.id %}" class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-white text-gray-800 p-2 rounded-full hover:bg-purple-500 hover:text-white transition-colors">
+                          <ion-icon name="heart-outline" class="text-lg"></ion-icon>
+                        </button>
+                      </form>
                     </div>
+                  </a>
 
+                  <div class="p-3">
+                    <a href="{% url 'product_detail' product.id %}" class="block">
+                      <h3 class="text-sm font-medium text-gray-800 hover:text-purple-500 transition-colors truncate">{{ product.name }}</h3>
+                    </a>
+                    <p class="text-xs text-gray-500 mb-1">{{ product.category.name }}</p>
+                    
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-sm font-bold text-gray-800">${{ product.price }}</span>
+                        {% if product.old_price %}
+                          <span class="text-xs text-gray-400 line-through">${{ product.old_price }}</span>
+                        {% endif %}
+                      </div>
+                      <div class="flex text-amber-400 text-xs">
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star-half"></ion-icon>
+                    </div>
+                    </div>
+                  </div>
                   </div>
                   {% endfor %}
-
                 </div>
-
               </div>
 
-            </div>
+            <!-- Top Rated Section -->
+            <div class="bg-white rounded-xl shadow-lg p-4 mb-6">
+              <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center border-b pb-3">
+                <span class="bg-gradient-to-r from-blue-500 to-cyan-500 w-1 h-6 rounded mr-3"></span>
+                Top Rated
+                <a href="#" class="ml-auto text-sm font-medium text-blue-500 hover:text-blue-600 flex items-center">
+                  View All
+                  <ion-icon name="arrow-forward-outline" class="ml-1"></ion-icon>
+                </a>
+              </h2>
 
-            {% comment %} *********Top Rated********* {% endcomment %}
-            <div class="product-showcase">
-
-              <h2 class="title">Top Rated</h2>
-
-              <div class="showcase-wrapper has-scrollbar">
-
-                <div class="showcase-container">
-                  
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   {% for product in top_rated %}
-
-                  <div class="showcase">
-
-                    <a href="{% url 'product_detail' product.id %}" class="showcase-img-box">
-                      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="showcase-img" width="70" />
-                    </a>
-
-                    <div class="showcase-content">
-
-                      <a href="{% url 'product_detail' product.id %}"><h4 class="showcase-title">{{ product.name }}</h4></a>
-
-                      <a href="{% url 'product_detail' product.id %}" class="showcase-category">{{ product.category.name }}</a>
-
-                      <div class="price-box">
-                        <p class="price">${{ product.price }}</p>
-                        {% if product.old_price %}
-                          <del>${{ product.old_price }}</del>
-                        {% endif %}
-                      </div>
-
-                      <!--  Cart Button -->
-                      <form method="POST" action="{% url 'add_to_cart' product.id %}" class="mt-3">
+                <div class="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100">
+                  <a href="{% url 'product_detail' product.id %}" class="block relative group">
+                    <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-100">
+                      <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                           class="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    <span class="absolute top-2 right-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-2 py-1 rounded-full text-xs font-medium">Top Rated</span>
+                    <!-- Quick action buttons -->
+                    <div class="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                      <form method="POST" action="{% url 'add_to_cart' product.id %}" class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                         {% csrf_token %}
-                        <button type="submit"
-                          class="bg-[#FA8072] text-black border border-[#FA8072] px-2 py-1 rounded 
-                                hover:bg-black hover:text-white transition-colors duration-300
-                                text-xs font-medium">
-                          Add to Cart
+                        <button type="submit" class="bg-white text-gray-800 p-2 rounded-full hover:bg-blue-500 hover:text-white transition-colors">
+                          <ion-icon name="cart-outline" class="text-lg"></ion-icon>
+                        </button>
+                      </form>
+                      <form method="POST" action="{% url 'add_to_wishlist' product.id %}" class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-white text-gray-800 p-2 rounded-full hover:bg-blue-500 hover:text-white transition-colors">
+                          <ion-icon name="heart-outline" class="text-lg"></ion-icon>
                         </button>
                       </form>
                     </div>
+                  </a>
 
+                  <div class="p-3">
+                    <a href="{% url 'product_detail' product.id %}" class="block">
+                      <h3 class="text-sm font-medium text-gray-800 hover:text-blue-500 transition-colors truncate">{{ product.name }}</h3>
+                    </a>
+                    <p class="text-xs text-gray-500 mb-1">{{ product.category.name }}</p>
+                    
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-sm font-bold text-gray-800">${{ product.price }}</span>
+                        {% if product.old_price %}
+                          <span class="text-xs text-gray-400 line-through">${{ product.old_price }}</span>
+                        {% endif %}
+                      </div>
+                      <div class="flex text-amber-400 text-xs">
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                        <ion-icon name="star"></ion-icon>
+                    </div>
+                    </div>
+                  </div>
                   </div>
                   {% endfor %}
-
                 </div>
-
               </div>
 
             </div>
-
-          </div>
-
-
 
           {% comment %} **********Deal of the day*************** {% endcomment %}
           <div class="product-featured">
@@ -2209,8 +2099,7 @@
   <!--
     - ionicon link
   -->
-  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+  <script src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 
 </body>
 
