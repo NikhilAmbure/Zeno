@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Payment Method</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -20,6 +21,16 @@
         @keyframes float {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-10px) rotate(180deg); }
+        }
+        /* Fix radio button selection in some browsers */
+        input[type="radio"]:checked + div .inner-circle {
+            opacity: 1;
+        }
+        .payment-option {
+            transition: all 0.3s ease;
+        }
+        .payment-option:hover {
+            transform: translateY(-2px);
         }
     </style>
 </head>
@@ -52,12 +63,12 @@
                 {% csrf_token %}
                 
                 <!-- Razorpay Option -->
-                <label class="block cursor-pointer group">
-                    <div class="relative p-4 bg-white rounded-xl border-2 border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-md group-hover:-translate-y-0.5">
+                <label class="block cursor-pointer group payment-option">
+                    <div class="relative p-4 bg-white rounded-xl border-2 border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-md">
                         <div class="flex items-center space-x-3">
-                            <input type="radio" name="payment_method" value="RAZORPAY" class="sr-only peer" onchange="togglePaymentMethod(this)">
+                            <input type="radio" name="payment_method" value="RAZORPAY" class="sr-only peer" onchange="updatePaymentMethod(this)">
                             <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-blue-500 transition-colors">
-                                <div class="w-2.5 h-2.5 bg-blue-500 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                <div class="w-2.5 h-2.5 bg-blue-500 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity inner-circle"></div>
                             </div>
                             <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,12 +84,12 @@
                 </label>
             
                 <!-- COD Option -->
-                <label class="block cursor-pointer group">
-                    <div class="relative p-4 bg-white rounded-xl border-2 border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-md group-hover:-translate-y-0.5">
+                <label class="block cursor-pointer group payment-option">
+                    <div class="relative p-4 bg-white rounded-xl border-2 border-gray-200 transition-all duration-300 hover:border-blue-300 hover:shadow-md">
                         <div class="flex items-center space-x-3">
-                            <input type="radio" name="payment_method" value="COD" class="sr-only peer" checked onchange="togglePaymentMethod(this)">
+                            <input type="radio" name="payment_method" value="COD" class="sr-only peer" checked onchange="updatePaymentMethod(this)">
                             <div class="w-5 h-5 border-2 border-gray-300 rounded-full flex items-center justify-center peer-checked:border-blue-500 transition-colors">
-                                <div class="w-2.5 h-2.5 bg-blue-500 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                                <div class="w-2.5 h-2.5 bg-blue-500 rounded-full opacity-0 peer-checked:opacity-100 transition-opacity inner-circle"></div>
                             </div>
                             <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,12 +105,13 @@
                 </label>
             
                 <!-- Submit Button -->
-                <button type="submit" class="w-full mt-4 bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 px-4 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300">
-                    Place Order (COD)
+                <button type="submit" id="submit-button" class="w-full mt-4 bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 px-4 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2">
+                    <span id="button-text">Place Order (COD)</span>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
                 </button>
             </form>
-            
-            
 
             <!-- Security Text -->
             <div class="mt-4 text-center">
@@ -110,47 +122,70 @@
                     <span>Secure payment</span>
                 </div>
             </div>
+
+            <!-- Django Messages -->
+            {% if messages %}
+            <div class="mt-4">
+                {% for message in messages %}
+                <div class="p-3 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} text-sm">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
     </div>
 
     <script>
-        function updateSelection(radio) {
-            // Update border colors using Tailwind classes
-            document.querySelectorAll('label > div').forEach(card => {
+        function updatePaymentMethod(radio) {
+            // Update button text based on selection
+            const buttonText = document.getElementById('button-text');
+            const submitButton = document.getElementById('submit-button');
+            
+            if (radio.value === 'RAZORPAY') {
+                buttonText.textContent = 'Continue to Payment';
+                submitButton.classList.remove('from-green-500', 'to-teal-600');
+                submitButton.classList.add('from-blue-500', 'to-purple-600');
+            } else {
+                buttonText.textContent = 'Place Order (COD)';
+                submitButton.classList.remove('from-blue-500', 'to-purple-600');
+                submitButton.classList.add('from-green-500', 'to-teal-600');
+            }
+
+            // Update card selection visuals
+            document.querySelectorAll('.payment-option > div').forEach(card => {
                 card.classList.remove('border-blue-500', 'shadow-md');
                 card.classList.add('border-gray-200');
             });
 
-            const selectedCard = radio.closest('label').querySelector('div');
+            const selectedCard = radio.closest('.payment-option').querySelector('div');
             selectedCard.classList.remove('border-gray-200');
             selectedCard.classList.add('border-blue-500', 'shadow-md');
-            }
-            function togglePaymentMethod(radio) {
-                const razorpayDiv = document.getElementById('razorpay-details');
-                const codDiv = document.getElementById('cod-details');
-        
-                if (radio.value === 'RAZORPAY') {
-                    razorpayDiv.classList.remove('hidden');
-                    codDiv.classList.add('hidden');
-                } else if (radio.value === 'COD') {
-                    razorpayDiv.classList.add('hidden');
-                    codDiv.classList.remove('hidden');
-                }
-            }
-        
-            // Auto-trigger selection on load
-            window.onload = () => {
-                const checkedRadio = document.querySelector('input[name="payment_method"]:checked');
-                if (checkedRadio) togglePaymentMethod(checkedRadio);
-            }
-        
+        }
+
+        // Handle form submission
         document.getElementById('payment-form').addEventListener('submit', function(e) {
-            const selectedMethod = document.querySelector('input[name="payment_method"]:checked').value;
-            if (selectedMethod === 'RAZORPAY') {
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+            
+            if (!selectedMethod) {
+                e.preventDefault();
+                alert('Please select a payment method');
+                return;
+            }
+
+            if (selectedMethod.value === 'RAZORPAY') {
                 e.preventDefault();
                 window.location.href = "{% url 'razorpay_payment' %}";
             }
         });
+
+        // Initialize on page load
+        window.onload = () => {
+            const checkedRadio = document.querySelector('input[name="payment_method"]:checked');
+            if (checkedRadio) {
+                updatePaymentMethod(checkedRadio);
+            }
+        };
     </script>
 </body>
 </html>

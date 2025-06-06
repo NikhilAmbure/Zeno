@@ -191,30 +191,7 @@
     </div>
   </div>
 
-  <!-- Toast Notification -->
-  {% if messages %}
-  <div id="toast" 
-       class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center transform transition-all duration-300 translate-y-0 opacity-100">
-    <i class="fas fa-check-circle mr-2"></i>
-    <div>
-      {% for message in messages %}
-        {{ message }}
-      {% endfor %}
-    </div>
-  </div>
-
-  <script>
-    // Hide toast message after 3 seconds with animation
-    setTimeout(function() {
-      const toast = document.getElementById('toast');
-      if (toast) {
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('translate-y-4', 'opacity-0');
-        setTimeout(() => toast.remove(), 300);
-      }
-    }, 3000);
-  </script>
-  {% endif %}
+  {% include 'toast_messages.html' %}
 
   <!-- Prevent form resubmission on page refresh -->
   <script>

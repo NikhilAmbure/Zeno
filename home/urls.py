@@ -32,6 +32,7 @@ urlpatterns = [
     path('select-payment-method/', select_payment_method, name='select_payment_method'),
     path('place-order/cod/', place_order_cod, name='place_order_cod'),
     path('razorpay-payment/', razorpay_payment, name='razorpay_payment'),
+    path('handle-payment/', handle_payment, name='handle_payment'),
     path('receipt/<int:order_id>/', generate_receipt, name='generate_receipt'),
     path('cancel-order/<int:order_id>/', cancel_order, name='cancel_order'),
 

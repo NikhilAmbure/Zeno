@@ -10,6 +10,8 @@ from django.contrib.postgres.search import (SearchQuery, SearchVector, SearchRan
 from django.db.models import Q
 from decimal import Decimal
 from django.utils import timezone
+from django.conf import settings
+from home.razorpay_handler import RazorPayPayment
 
 # Gets the custom user model
 User = get_user_model()
@@ -26,14 +28,28 @@ def index(request):
     dotd = Product.objects.filter(dotd=True)[:2]
     new_products = Product.objects.filter(new_prod=True)[:12]
     best_sellers = Product.objects.filter(best_sellers=True)[:6]
-    
+    dress_frock = Product.objects.filter(category__name='Dress').count()
+    winter_wear = Product.objects.filter(category__name='Winter').count()
+    glasses_lens = Product.objects.filter(category__name='Glasses').count()
+    shorts_jeans = Product.objects.filter(category__name='Shorts & Jeans').count()
+    t_shirts = Product.objects.filter(category__name='T-shirts').count()
+    jackets = Product.objects.filter(category__name='Jackets').count()
+    hats = Product.objects.filter(category__name='Hats').count()
+
     return render(request, 'index.html', {
         'new_arrivals': new_arrivals,
         'trending': trending,
         'top_rated': top_rated,
         'deal_of_the_day': dotd,
         'new_products': new_products,
-        'best_sellers': best_sellers
+        'best_sellers': best_sellers,
+        'dress_frock': dress_frock,
+        'winter_wear': winter_wear,
+        'glasses_lens': glasses_lens,
+        'shorts_jeans': shorts_jeans,
+        't_shirts': t_shirts,
+        'jackets': jackets,
+        'hats': hats
     })
 
 
@@ -223,13 +239,13 @@ def wishlist_view(request):
 def add_to_wishlist(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     WishlistItem.objects.get_or_create(user=request.user, product=product)
-    messages.success(request, "Added to wishlist.")
+    messages.success(request, f"{product.name} added to wishlist!")
     return redirect(request.META.get('HTTP_REFERER', 'index'))
 
 @login_required(login_url='/login/')
 def remove_from_wishlist(request, item_id):
     WishlistItem.objects.filter(id=item_id, user=request.user).delete()
-    messages.success(request, "Removed from wishlist.")
+    messages.success(request, "Item removed from wishlist!")
     return redirect('wishlist')
 
 @login_required(login_url='/login/')
@@ -242,13 +258,13 @@ def move_to_cart(request, product_id):
     if not created:
         cart_item.quantity += 1
         cart_item.save()
-    messages.success(request, "Moved to cart.")
+    messages.success(request, f"{product.name} moved to cart!")
     return redirect('wishlist')
 
 @login_required(login_url='/login/')
 def clear_wishlist(request):
     WishlistItem.objects.filter(user=request.user).delete()
-    messages.success(request, "Wishlist cleared.")
+    messages.success(request, "Wishlist cleared!")
     return redirect('wishlist')
 
 def wishlist_count(request):
@@ -307,7 +323,7 @@ def add_to_cart(request, product_id):
     request.session['cart'] = cart 
     request.session.modified = True
 
-    messages.success(request, f"Added to cart!")
+    messages.success(request, f"{product.name} added to cart!")
 
     return redirect('product_detail', pk=product.id)
 
@@ -320,6 +336,7 @@ def remove_from_cart(request, product_id):
         del cart[product_id_str]
         request.session['cart'] = cart
         request.session.modified = True
+        messages.success(request, "Item removed from cart!")
 
     return redirect('cart')
 
@@ -440,7 +457,133 @@ def select_payment_method(request):
 
 
 def razorpay_payment(request):
-    return render(request, 'razorpay.html')
+    order_id = request.session.get('order_id')
+    if not order_id:
+        messages.error(request, 'No order found. Please start checkout again.')
+        return redirect('cart')
+    
+    try:
+        order = Order.objects.get(id=order_id, user=request.user)
+        
+        # Calculate total amount with GST
+        gst_rate = Decimal('0.18')
+        gst_amount = (order.total_price * gst_rate).quantize(Decimal('0.01'))
+        total_with_gst = order.total_price + gst_amount
+        
+        try:
+            # Initialize RazorPay client
+            razorpay_handler = RazorPayPayment()
+            
+            # Create Razorpay order with proper amount formatting
+            razorpay_order = razorpay_handler.create_order(
+                amount_in_inr=float(total_with_gst),
+                receipt=f"order_{order.id}"
+            )
+            
+            # Validate Razorpay response
+            if not razorpay_order.get('id'):
+                raise ValueError('Invalid response from Razorpay')
+            
+            # Save Razorpay order ID to session for verification later
+            request.session['razorpay_order_id'] = razorpay_order['id']
+            
+            context = {
+                'order': order,
+                'total_amount': total_with_gst,
+                'razorpay_order_id': razorpay_order['id'],
+                'razorpay_merchant_key': settings.RAZORPAY_KEY,
+                'razorpay_amount': razorpay_order['amount'],
+                'currency': 'INR',
+                'callback_url': request.build_absolute_uri('/handle-payment/'),
+                'gst_amount': gst_amount
+            }
+            
+            return render(request, 'razorpay.html', context)
+            
+        except (ValueError, KeyError) as e:
+            messages.error(request, f'Invalid response from payment gateway: {str(e)}')
+            return redirect('select_payment_method')
+        except Exception as e:
+            messages.error(request, f'Error initializing payment: {str(e)}')
+            return redirect('select_payment_method')
+            
+    except Order.DoesNotExist:
+        messages.error(request, 'Order not found')
+        return redirect('cart')
+    except Exception as e:
+        messages.error(request, f'Error retrieving order: {str(e)}')
+        return redirect('cart')
+
+@login_required
+def handle_payment(request):
+    if request.method != "POST":
+        messages.error(request, 'Invalid request method')
+        return redirect('cart')
+
+    try:
+        # Get the payment details from POST data
+        payment_data = {
+            'razorpay_payment_id': request.POST.get('razorpay_payment_id'),
+            'razorpay_order_id': request.POST.get('razorpay_order_id'),
+            'razorpay_signature': request.POST.get('razorpay_signature')
+        }
+        
+        # Validate required parameters
+        if not all(payment_data.values()):
+            messages.error(request, 'Missing payment parameters')
+            return redirect('select_payment_method')
+        
+        # Get the order from session
+        session_order_id = request.session.get('order_id')
+        if not session_order_id:
+            messages.error(request, 'No order found in session')
+            return redirect('cart')
+            
+        # Verify session razorpay_order_id matches the one from callback
+        session_razorpay_order_id = request.session.get('razorpay_order_id')
+        if session_razorpay_order_id != payment_data['razorpay_order_id']:
+            messages.error(request, 'Order ID mismatch')
+            return redirect('cart')
+        
+        try:
+            order = Order.objects.get(id=session_order_id, user=request.user)
+        except Order.DoesNotExist:
+            messages.error(request, 'Order not found')
+            return redirect('cart')
+            
+        # Initialize Razorpay client and verify payment
+        try:
+            razorpay_handler = RazorPayPayment()
+            razorpay_handler.verify_payment_signature(payment_data)
+        except Exception as e:
+            messages.error(request, f'Payment verification failed: {str(e)}')
+            return redirect('select_payment_method')
+        
+        # Update order status
+        order.payment_method = 'RAZORPAY'
+        order.is_paid = True
+        order.status = 'confirmed'
+        order.save()
+        
+        try:
+            # Send order confirmation email
+            send_order_receipt(order)
+        except Exception as e:
+            # Log the error but don't stop the process
+            print(f"Error sending order receipt: {str(e)}")
+        
+        # Clear all relevant session data
+        session_keys = ['order_id', 'razorpay_order_id', 'cart']
+        for key in session_keys:
+            request.session.pop(key, None)
+        request.session.modified = True
+        
+        messages.success(request, 'Payment successful! Your order has been confirmed.')
+        return redirect('my-orders')
+        
+    except Exception as e:
+        messages.error(request, f'Error processing payment: {str(e)}')
+        return redirect('select_payment_method')
 
 @login_required
 def place_order_cod(request):

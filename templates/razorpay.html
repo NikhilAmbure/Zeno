@@ -8,42 +8,103 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex justify-center items-center">
-    <div class="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
-        <h1 class="text-2xl font-bold mb-6">Complete Your Payment</h1>
-        <p class="text-lg mb-4">Total Amount: ₹{{ total_price }}</p>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 flex items-center justify-center">
+    <div class="w-full max-w-md">
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">Complete Your Payment</h1>
+                <p class="text-gray-600">Order #{{ order.id }}</p>
+            </div>
 
-        <button id="payBtn" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
-            Pay with Razorpay
-        </button>
+            <!-- Order Summary -->
+            <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                <h3 class="font-semibold text-gray-800 mb-3">Order Summary</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Total Amount:</span>
+                        <span class="font-medium">₹{{ order.total_price }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Button -->
+            <button id="payButton" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-4 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center space-x-2">
+                <span>Pay Now</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
+            </button>
+
+            <!-- Security Badge -->
+            <div class="mt-6 text-center">
+                <div class="inline-flex items-center space-x-1 text-sm text-gray-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    <span>Secure payment powered by Razorpay</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        document.getElementById('payBtn').onclick = function(e) {
+        document.getElementById('payButton').onclick = function(e) {
             e.preventDefault();
+            
+            var options = {
+                "key": "{{ razorpay_merchant_key }}",
+                "amount": "{{ razorpay_amount }}",
+                "currency": "{{ currency }}",
+                "name": "Zeno Store",
+                "description": "Order #{{ order.id }}",
+                "order_id": "{{ razorpay_order_id }}",
+                "handler": function (response) {
+                    // Create a form to submit payment details to backend
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = "{{ callback_url }}";
 
-            const options = {
-                "key": "rzp_test_YourTestKeyHere", // Replace with your Razorpay test key
-                "amount": {{ total_price|floatformat:2|floatformat:"0" }} * 100, // amount in paise
-                "currency": "INR",
-                "name": "Your Store",
-                "description": "Purchase Products",
-                "handler": function (response){
-                    alert("Payment successful. Payment ID: " + response.razorpay_payment_id);
-                    // Optionally make AJAX call to backend to verify payment and place order
-                    window.location.href = "/order-success/";
+                    // Add CSRF token
+                    var csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrfmiddlewaretoken';
+                    csrfInput.value = '{{ csrf_token }}';
+                    form.appendChild(csrfInput);
+
+                    // Add payment details
+                    var fields = ['razorpay_payment_id', 'razorpay_order_id', 'razorpay_signature'];
+                    fields.forEach(field => {
+                        if (response[field]) {
+                            var input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = field;
+                            input.value = response[field];
+                            form.appendChild(input);
+                        }
+                    });
+
+                    document.body.appendChild(form);
+                    form.submit();
                 },
                 "prefill": {
-                    "name": "{{ request.user.get_full_name }}",
-                    "email": "{{ request.user.email }}"
+                    "name": "{{ order.name }}",
+                    "email": "{{ order.email }}",
+                    "contact": "{{ order.phone }}"
                 },
                 "theme": {
-                    "color": "#3399cc"
+                    "color": "#4F46E5"
                 }
             };
-            const rzp = new Razorpay(options);
-            rzp.open();
-        }
+            
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        };
     </script>
 </body>
 </html>
