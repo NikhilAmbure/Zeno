@@ -117,6 +117,11 @@ DATABASES = {
         "PASSWORD": os.getenv('DB_PASSWORD', '1702'),
         "HOST": os.getenv('DB_HOST', 'localhost'),
         "PORT": os.getenv('DB_PORT', '5432'),
+        "CONN_MAX_AGE": 600,
+        "OPTIONS": {
+            "sslmode": "require",
+            "connect_timeout": 30,
+        }
     }
 }
 
@@ -124,6 +129,7 @@ DATABASES = {
 if os.getenv('DATABASE_URL'):
     DATABASES['default'] = dj_database_url.config(
         conn_max_age=600,
+        conn_health_checks=True,
         ssl_require=True
     )
 
@@ -183,7 +189,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # For local cache
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache_table",
     }
 }
 
@@ -200,3 +207,29 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 # RAZORPAY SETTINGS
 RAZORPAY_KEY = os.getenv('RAZORPAY_KEY_ID', '')    
 RAZORPAY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', '')
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'level': 'INFO',
+            'handlers': ['console'],
+        },
+    },
+}
