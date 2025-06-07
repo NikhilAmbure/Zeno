@@ -28,13 +28,13 @@ db.sqlite3-journal
 media
 
 # Environment variables
-imp.env
-imp.env.local
-imp.env.*.local
+.env
+.env.local
+.env.*.local
 
 # Virtual Environment
-imp.env/
-imp.ENV/
+.env/
+ENV/
 
 # IDE
 .idea/
