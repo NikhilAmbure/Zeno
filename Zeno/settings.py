@@ -31,9 +31,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['zeno-0vpj.onrender.com', 'localhost', '127.0.0.1']
-if os.getenv('ALLOWED_HOSTS'):
-    ALLOWED_HOSTS.extend(os.getenv('ALLOWED_HOSTS').split(' '))
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1 localhost").split()
 
 
 # Application definition
@@ -45,11 +43,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'home'
+    'home',
+    'whitenoise.runserver_nostatic',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -86,6 +86,9 @@ WSGI_APPLICATION = 'Zeno.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+import dj_database_url
+
+# Default local database configuration
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -93,13 +96,16 @@ DATABASES = {
         "USER": os.getenv('DB_USER', 'postgres'),
         "PASSWORD": os.getenv('DB_PASSWORD', '1702'),
         "HOST": os.getenv('DB_HOST', 'localhost'),
-        "PORT": os.getenv('DB_PORT', ''),
+        "PORT": os.getenv('DB_PORT', '5432'),
     }
 }
 
-# Update database configuration from DATABASE_URL if available
+# Override with DATABASE_URL if available (production)
 if os.getenv('DATABASE_URL'):
-    DATABASES['default'] = dj_database_url.parse(os.getenv('DATABASE_URL'))
+    DATABASES['default'] = dj_database_url.config(
+        conn_max_age=600,
+        ssl_require=True
+    )
 
 
 # Password validation
@@ -136,8 +142,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# Extra places for collectstatic to find static files.
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
