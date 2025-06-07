@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +25,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-xewl1!tppk+$ey-ow9+fw2ls(0n+^**+9zy7qpi)h0409cb1vj'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-xewl1!tppk+$ey-ow9+fw2ls(0n+^**+9zy7qpi)h0409cb1vj')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
 
 
 # Application definition
@@ -81,11 +86,11 @@ WSGI_APPLICATION = 'Zeno.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "zeno_db",
-        "USER": "postgres",
-        "PASSWORD": "1702",
-        "HOST": "localhost",
-        "PORT": "",
+        "NAME": os.getenv('DB_NAME', 'zeno_db'),
+        "USER": os.getenv('DB_USER', 'postgres'),
+        "PASSWORD": os.getenv('DB_PASSWORD', '1702'),
+        "HOST": os.getenv('DB_HOST', 'localhost'),
+        "PORT": os.getenv('DB_PORT', ''),
     }
 }
 
@@ -147,22 +152,15 @@ CACHES = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_USE_TLS = True
-EMAIL_PORT = 587
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 
-
-
-# EMAIL_HOST
-EMAIL_HOST_USER = ""
-EMAIL_HOST_PASSWORD = ""
-
+# EMAIL SETTINGS
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 
 
 # RAZORPAY SETTINGS
-RAZORPAY_KEY_ID = ""
-RAZORPAY_KEY_SECRET = ""
-
-# For backward compatibility
-RAZORPAY_KEY = RAZORPAY_KEY_ID
-RAZORPAY_SECRET = RAZORPAY_KEY_SECRET
+RAZORPAY_KEY = os.getenv('RAZORPAY_KEY_ID', '')    
+RAZORPAY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', '')
