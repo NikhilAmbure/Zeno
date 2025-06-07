@@ -31,16 +31,26 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+# Updated ALLOWED_HOSTS to include all necessary domains
+ALLOWED_HOSTS = ['zeno-0vpj.onrender.com', 'localhost', '127.0.0.1', '.onrender.com']
+
+# CSRF Settings
+CSRF_TRUSTED_ORIGINS = ['https://zeno-0vpj.onrender.com', 'https://*.onrender.com']
+CSRF_COOKIE_DOMAIN = None  # Let Django handle this automatically
+CSRF_USE_SESSIONS = True
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
 
 # Security Settings
 SECURE_SSL_REDIRECT = not DEBUG
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
+USE_X_FORWARDED_HOST = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Application definition
 
@@ -55,6 +65,7 @@ INSTALLED_APPS = [
     'home',
 ]
 
+# Updated Middleware to include custom host middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -64,6 +75,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'home.middleware.CustomHostMiddleware',  # Add custom middleware
 ]
 
 # CustomUser model used
