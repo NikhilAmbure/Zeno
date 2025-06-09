@@ -21,12 +21,14 @@
       },
       {
         "src": "/(.*)",
-        "dest": "api/index.py"
+        "dest": "/api/index.py"
       }
     ],
     "env": {
       "PYTHONPATH": ".",
-      "DJANGO_SETTINGS_MODULE": "Zeno.settings"
+      "DJANGO_SETTINGS_MODULE": "Zeno.settings",
+      "ALLOWED_HOSTS": ".vercel.app",
+      "DEBUG": "False"
     }
 }
   
