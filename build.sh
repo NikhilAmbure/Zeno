@@ -1,17 +1,13 @@
 #!/usr/bin/env bash
-# exit on error
+
+# Exit on error
 set -o errexit
 
-# Install dependencies
+# Modify this line as needed for your package manager (pip, poetry, etc.)
 pip install -r requirements.txt
 
-# Collect static files
+# Convert static asset files
 python manage.py collectstatic --no-input
 
-# Run migrations
+# Apply any outstanding database migrations
 python manage.py migrate
-
-# Create superuser (only if environment variables exist)
-if [ -n "$DJANGO_SUPERUSER_USERNAME" ] && [ -n "$DJANGO_SUPERUSER_PASSWORD" ]; then
-    python manage.py createsuperuser --noinput || true
-fi
