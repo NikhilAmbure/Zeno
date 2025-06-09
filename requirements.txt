@@ -28,7 +28,6 @@ pdfkit==1.0.0
 pillow==11.1.0
 pipenv==2025.0.2
 platformdirs==4.3.8
-psycopg2==2.9.10
 psycopg2-binary==2.9.10
 PyAutoGUI==0.9.54
 PyGetWindow==0.0.9
