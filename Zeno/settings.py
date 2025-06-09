@@ -5,6 +5,9 @@ Django settings for Zeno project - FIXED STATIC FILES CONFIGURATION
 import os
 from pathlib import Path
 import dj_database_url
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,10 +24,6 @@ ALLOWED_HOSTS = [
     '127.0.0.1'
 ]
 
-
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 
 # Configure Cloudinary
 cloudinary.config(
