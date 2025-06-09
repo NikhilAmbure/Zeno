@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-
-# Exit on error
 set -o errexit
 
-# Modify this line as needed for your package manager (pip, poetry, etc.)
+echo "Installing dependencies..."
 pip install -r requirements.txt
 
-# Convert static asset files
-python manage.py collectstatic --no-input
+echo "Collecting static files..."
+python manage.py collectstatic --no-input --verbosity=2
 
-# Apply any outstanding database migrations
+echo "Running migrations..."
 python manage.py migrate
+
+echo "Build completed successfully!"
