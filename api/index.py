@@ -1,8 +1,12 @@
 # api/index.py
 
 from Zeno.wsgi import application  # Adjust path to your actual wsgi.py
+from django.core.wsgi import get_wsgi_application
 from io import BytesIO
 import sys
+
+# Initialize WSGI application
+app = application
 
 def handler(event, context):
     environ = {
@@ -27,7 +31,7 @@ def handler(event, context):
         headers_set[:] = [status, headers]
         return body.write
 
-    result = application(environ, start_response)
+    result = app(environ, start_response)
     for data in result:
         if data:
             body.write(data)
