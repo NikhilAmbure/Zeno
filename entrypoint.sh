@@ -23,4 +23,4 @@ else:
 END
 
 # Start your application
-exec gunicorn your_project.wsgi:application --bind 0.0.0.0:$PORT
+exec gunicorn Zeno.wsgi:application --bind 0.0.0.0:$PORT
