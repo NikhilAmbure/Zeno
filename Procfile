@@ -1,0 +1,1 @@
+web: gunicorn Zeno.wsgi:application --log-file - 
