@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Enter OTP</title>
+  <title>Enter OTP | Zeno</title>
   <link rel="shortcut icon" href="{% static 'assets/images/logo/zeno_logo.png' %}" type="image/x-icon" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -19,20 +19,36 @@
 
     <div class="text-center">
       <h2 class="text-2xl font-semibold text-pink-600 mb-1">OTP Verification</h2>
-      <p class="text-sm text-gray-500">Enter the 4-digit code sent to your contact</p>
+      <p class="text-sm text-gray-500">
+        {% if request.GET.reset %}
+        Enter the OTP sent to your email to reset your password
+        {% else %}
+        Enter the OTP sent to your email to verify your account
+        {% endif %}
+      </p>
     </div>
 
     <form method="post" class="space-y-4">
       {% csrf_token %}
+
+      {% if messages %}
+      <ul class="mb-3">
+        {% for message in messages %}
+        <li class="text-xs {% if message.tags == 'error' %}text-red-600{% else %}text-green-600{% endif %} font-medium mb-1">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
       <div>
         <label for="otp" class="block mb-1 text-sm font-medium text-gray-700">OTP</label>
         <input
           type="text"
           name="otp"
           id="otp"
-          maxlength="6"
+          maxlength="4"
           required
           class="w-full rounded-xl border border-gray-300 px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-pink-400"
+          placeholder="Enter 4-digit OTP"
         />
       </div>
 
@@ -40,24 +56,35 @@
         type="submit"
         class="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-2 rounded-xl shadow-md transition duration-200"
       >
-        Verify OTP
+        {% if request.GET.reset %}
+        Verify & Reset Password
+        {% else %}
+        Verify Account
+        {% endif %}
       </button>
     </form>
 
+    {% if not request.GET.reset %}
+    <p class="text-center text-gray-600 text-xs">
+      Didn't receive the code?
+      <a href="{% url 'register' %}" class="text-pink-600 font-semibold hover:underline">Register again</a>
+    </p>
+    {% endif %}
   </div>
 
   {% if messages %}
-    <div id="toast-message" class="fixed top-5 left-5 bg-green-500 text-white px-4 py-2 rounded shadow-lg text-sm z-50">
-      {% for message in messages %}
-        {{ message }}
-      {% endfor %}
-    </div>
-    <script>
-      setTimeout(() => {
-        const toast = document.getElementById('toast-message');
-        if (toast) toast.style.display = 'none';
-      }, 2000);
-    </script>
+  <div id="toast-message" class="fixed top-5 left-5 bg-green-500 text-white px-3 py-1 rounded shadow-lg text-xs z-50">
+    {% for message in messages %}
+      {{ message }}
+    {% endfor %}
+  </div>
+
+  <script>
+    setTimeout(() => {
+      const toast = document.getElementById('toast-message');
+      if (toast) toast.style.display = 'none';
+    }, 2000);
+  </script>
   {% endif %}
 
 </body>

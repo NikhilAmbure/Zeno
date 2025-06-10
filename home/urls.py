@@ -36,4 +36,7 @@ urlpatterns = [
     path('receipt/<int:order_id>/', generate_receipt, name='generate_receipt'),
     path('cancel-order/<int:order_id>/', cancel_order, name='cancel_order'),
 
+    path('forgot-password/', forgot_password, name='forgot-password'),
+    path('reset-password/<int:user_id>/', reset_password, name='reset-password'),
+
 ]

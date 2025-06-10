@@ -3,7 +3,7 @@ from django.core.cache import cache
 from django.contrib import messages
 from .emailer import sendOTPToEmail, send_order_receipt, send_order_cancellation_email
 import random
-from django.contrib.auth import get_user_model, login, logout as auth_logout
+from django.contrib.auth import get_user_model, login, logout as auth_logout, authenticate
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser, Product, CartItem, OrderItem, Order, WishlistItem
 from django.contrib.postgres.search import (SearchQuery, SearchVector, SearchRank, TrigramSimilarity)
@@ -94,41 +94,21 @@ def search_results(request):
 def login_page(request):
     if request.method == 'POST':
         email = request.POST.get('email')
+        password = request.POST.get('password')
+        remember_me = request.POST.get('remember_me') == 'on'
 
-
-        # Rate Limiting
-        if cache.get(email):
-            data = cache.get(email)
-            data['count'] += 1
-
-            if data['count'] >= 3:
-                cache.set(email, data, 60 * 5)
-                messages.error(request, 'You can request OTP after 5min')
-                return redirect('/login/')
+        user = authenticate(request, email=email, password=password)
+        if user is not None:
+            login(request, user)
             
-            cache.set(email, data, 60 * 1)
-        
-        if not cache.get(email):
-            data = {
-                'email': email,
-                'count': 1
-            }
-            cache.set(email, data, 60 * 1)
-
-        
-        
-        user_obj = User.objects.filter(email = email)
-        if not user_obj.exists():
+            # Set session expiry based on remember me
+            if not remember_me:
+                request.session.set_expiry(0)  # Session expires when browser closes
+                
+            return redirect('/')
+        else:
+            messages.error(request, 'Invalid email or password')
             return redirect('/login/')
-        
-        email = user_obj[0].email
-        otp = random.randint(1000, 9999)
-        user_obj.update(otp = otp)
-        subject = "OTP for login"
-        message = f'Your OTP is {otp}'
-        sendOTPToEmail(email, subject, message)
-
-        return redirect(f'/enter_otp/{user_obj[0].id}/')
 
     return render(request, 'login.html')
 
@@ -155,48 +135,54 @@ def register_page(request):
             messages.error(request, "Email already in use.")
             return render(request, 'register.html')
 
-
-        user = CustomUser(username=username, email=email)
-        user.set_password(pass1)  # Hash the password!
+        # Create inactive user
+        user = CustomUser(username=username, email=email, is_active=False)
+        user.set_password(pass1)
+        
+        # Generate and set OTP
+        otp = random.randint(1000, 9999)
+        user.otp = otp
         user.save()
 
-        messages.success(request, "Account created successfully. Please login.")
-        return redirect('/login/')
+        # Send OTP email
+        subject = "Verify Your Email"
+        message = f'Your verification OTP is {otp}'
+        try:
+            sendOTPToEmail(email, subject, message)
+            messages.success(request, "Please check your email for OTP verification.")
+            return redirect(f'/enter_otp/{user.id}/')
+        except Exception as e:
+            user.delete()  # Delete the user if email sending fails
+            messages.error(request, "Could not send verification email. Please try again.")
+            return render(request, 'register.html')
         
     return render(request, 'register.html')
 
 def enter_otp_page(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        
+        if user.is_active:
+            messages.error(request, "User is already verified")
+            return redirect('/login/')
 
-    if request.method == 'POST':
-        user_obj = User.objects.get(id = user_id)
-
-        # To protect the routes from hackers
-        if cache.get(user_obj.username):
-            data = cache.get(user_obj.username)
-
-            if data['count'] >= 3:
-                messages.error(request, "You can request OTP after 5min.")
+        if request.method == 'POST':
+            otp = request.POST.get('otp')
+            
+            if int(otp) == user.otp:
+                user.is_active = True
+                user.otp = None  # Clear the OTP
+                user.save()
+                messages.success(request, "Account verified successfully. Please login.")
                 return redirect('/login/')
             
-            data['count'] += 1
-            cache.set(user_obj.username, data, 60 * 5)
-        else:
-            data = {'count': 1}
-            cache.set(user_obj.username, data, 60 * 5)
+            messages.error(request, "Invalid OTP")
+            return redirect(f'/enter_otp/{user_id}/')
 
-        otp = request.POST.get('otp')
-
-        if int(otp) == user_obj.otp:
-            login(request, user_obj)
-            return redirect('/')
-
-        # Message error for wrong otp
-        messages.error(request, "Invalid OTP")
-        
-        return redirect(f'/enter_otp/{user_obj.id}/')
-    
-
-    return render(request, 'enter_otp.html')
+        return render(request, 'enter_otp.html')
+    except User.DoesNotExist:
+        messages.error(request, "Invalid user")
+        return redirect('/register/')
 
 # To show the cart items
 def cart_view(request): 
@@ -728,3 +714,62 @@ def cancel_order(request, order_id):
     # If GET request, show confirmation page
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, 'confirm_cancellation.html', {'order': order})
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            # Rate limiting
+            if cache.get(f'forgot_password_{email}'):
+                messages.error(request, 'Please wait 5 minutes before requesting another OTP')
+                return redirect('/forgot-password/')
+            
+            # Generate and save OTP
+            otp = random.randint(1000, 9999)
+            user.otp = otp
+            user.save()
+            
+            # Send OTP email
+            subject = "Password Reset OTP"
+            message = f'Your password reset OTP is {otp}'
+            sendOTPToEmail(email, subject, message)
+            
+            # Set rate limit
+            cache.set(f'forgot_password_{email}', True, 300)  # 5 minutes
+            
+            messages.success(request, "Please check your email for the password reset OTP")
+            return redirect(f'/enter_otp/{user.id}/?reset=true')
+            
+        except User.DoesNotExist:
+            messages.error(request, "No account found with this email")
+            return redirect('/forgot-password/')
+            
+    return render(request, 'forgot_password.html')
+
+def reset_password(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        
+        if request.method == 'POST':
+            password1 = request.POST.get('password1')
+            password2 = request.POST.get('password2')
+            
+            if password1 != password2:
+                messages.error(request, "Passwords do not match")
+                return redirect(f'/reset-password/{user_id}/')
+            
+            user.set_password(password1)
+            user.otp = None  # Clear the OTP
+            user.save()
+            
+            messages.success(request, "Password reset successful. Please login with your new password.")
+            return redirect('/login/')
+            
+        return render(request, 'reset_password.html', {'user_id': user_id})
+        
+    except User.DoesNotExist:
+        messages.error(request, "Invalid user")
+        return redirect('/login/')
