@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from .manager import CustomUserManager
 from django.utils import timezone
 from django.conf import settings
+from cloudinary.models import CloudinaryField
 
 # Create your models here.
 
@@ -12,7 +13,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)
-    profile_picture = models.ImageField(upload_to="profile_pics/", blank=True, null=True)
+    profile_picture = CloudinaryField('image', null=True, blank=True)
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -50,8 +51,8 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True)
-    image = models.ImageField(upload_to='products/')
-    secondary_image = models.ImageField(upload_to='products/', null=True, blank=True)
+    image = CloudinaryField('image', null=True, blank=True)
+    secondary_image = CloudinaryField('image', null=True, blank=True)
 
     category = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
     old_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
