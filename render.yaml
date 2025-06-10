@@ -1,0 +1,13 @@
+databases:
+  type: postgres
+  plan: free
+  name: zeno_db_nnz2
+  user: zeno_db_nnz2_user
+
+services:
+  type: web
+  plan: free
+  name: Zeno
+  runtime: python
+  buildCommand: './build.sh'
+  startCommand: 'python -m gunicorn Zeno.wsgi:application -k uvicorn.workers.UvicornWorker'

@@ -2,8 +2,7 @@
 set -o errexit
 
 pip install -r requirements.txt
-python manage.py migrate
-python manage.py collectstatic --noinput --clear
 
-# Create media directory if it doesn't exist
-mkdir -p media
+python manage.py collectstatic --no-input 
+
+python manage.py migrate    
