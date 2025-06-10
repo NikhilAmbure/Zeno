@@ -173,7 +173,7 @@ def register_page(request):
             user.set_password(pass1)
             
             # Generate and set OTP
-            otp = random.randint(100000, 999999)  # 6-digit OTP
+            otp = random.randint(1000, 9999)  # 6-digit OTP
             user.otp = otp
             user.save()
 
@@ -815,8 +815,7 @@ def forgot_password(request):
                 return redirect('/forgot-password/')
             
             # Generate and set OTP
-            otp = random.randint(100000, 999999)  # 6-digit OTP
-            user.otp = otp
+            otp = random.randint(1000, 9999)  
             user.save()
             
             try:
