@@ -161,8 +161,9 @@ def register_page(request):
 def enter_otp_page(request, user_id):
     try:
         user = User.objects.get(id=user_id)
+        is_password_reset = request.session.get('is_password_reset', False)
         
-        if user.is_active:
+        if user.is_active and not is_password_reset:
             messages.error(request, "User is already verified")
             return redirect('/login/')
 
@@ -170,16 +171,21 @@ def enter_otp_page(request, user_id):
             otp = request.POST.get('otp')
             
             if int(otp) == user.otp:
-                user.is_active = True
-                user.otp = None  # Clear the OTP
-                user.save()
-                messages.success(request, "Account verified successfully. Please login.")
-                return redirect('/login/')
+                if is_password_reset:
+                    # Clear the password reset session flag
+                    del request.session['is_password_reset']
+                    return redirect(f'/reset-password/{user_id}/')
+                else:
+                    user.is_active = True
+                    user.otp = None  # Clear the OTP
+                    user.save()
+                    messages.success(request, "Account verified successfully. Please login.")
+                    return redirect('/login/')
             
             messages.error(request, "Invalid OTP")
             return redirect(f'/enter_otp/{user_id}/')
 
-        return render(request, 'enter_otp.html')
+        return render(request, 'enter_otp.html', {'is_password_reset': is_password_reset})
     except User.DoesNotExist:
         messages.error(request, "Invalid user")
         return redirect('/register/')
@@ -741,7 +747,9 @@ def forgot_password(request):
             cache.set(f'forgot_password_{email}', True, 300)  # 5 minutes
             
             messages.success(request, "Please check your email for the password reset OTP")
-            return redirect(f'/enter_otp/{user.id}/?reset=true')
+            # Store a flag in session to indicate this is a password reset flow
+            request.session['is_password_reset'] = True
+            return redirect(f'/enter_otp/{user.id}/')
             
         except User.DoesNotExist:
             messages.error(request, "No account found with this email")
