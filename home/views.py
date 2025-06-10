@@ -3,7 +3,7 @@ from django.core.cache import cache
 from django.contrib import messages
 from .emailer import sendOTPToEmail, send_order_receipt, send_order_cancellation_email
 import random
-from django.contrib.auth import get_user_model, login, logout as auth_logout
+from django.contrib.auth import get_user_model, login, logout as auth_logout, authenticate
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser, Product, CartItem, OrderItem, Order, WishlistItem
 from django.contrib.postgres.search import (SearchQuery, SearchVector, SearchRank, TrigramSimilarity)
@@ -94,41 +94,16 @@ def search_results(request):
 def login_page(request):
     if request.method == 'POST':
         email = request.POST.get('email')
-
-
-        # Rate Limiting
-        if cache.get(email):
-            data = cache.get(email)
-            data['count'] += 1
-
-            if data['count'] >= 3:
-                cache.set(email, data, 60 * 5)
-                messages.error(request, 'You can request OTP after 5min')
-                return redirect('/login/')
-            
-            cache.set(email, data, 60 * 1)
+        password = request.POST.get('password')
         
-        if not cache.get(email):
-            data = {
-                'email': email,
-                'count': 1
-            }
-            cache.set(email, data, 60 * 1)
-
+        user = authenticate(request, email=email, password=password)
         
-        
-        user_obj = User.objects.filter(email = email)
-        if not user_obj.exists():
+        if user is not None:
+            login(request, user)
+            return redirect('/')
+        else:
+            messages.error(request, "Invalid email or password.")
             return redirect('/login/')
-        
-        email = user_obj[0].email
-        otp = random.randint(1000, 9999)
-        user_obj.update(otp = otp)
-        subject = "OTP for login"
-        message = f'Your OTP is {otp}'
-        sendOTPToEmail(email, subject, message)
-
-        return redirect(f'/enter_otp/{user_obj[0].id}/')
 
     return render(request, 'login.html')
 
@@ -155,47 +130,38 @@ def register_page(request):
             messages.error(request, "Email already in use.")
             return render(request, 'register.html')
 
-
-        user = CustomUser(username=username, email=email)
-        user.set_password(pass1)  # Hash the password!
+        # Create user but mark as inactive until OTP verification
+        user = CustomUser(username=username, email=email, is_active=False)
+        user.set_password(pass1)
+        otp = random.randint(1000, 9999)
+        user.otp = otp
         user.save()
 
-        messages.success(request, "Account created successfully. Please login.")
-        return redirect('/login/')
+        # Send OTP email
+        subject = "OTP for Account Verification"
+        message = f'Your OTP is {otp}'
+        sendOTPToEmail(email, subject, message)
+
+        messages.success(request, "OTP sent to your email. Please verify to activate your account.")
+        return redirect(f'/enter_otp/{user.id[0].id}/')
         
     return render(request, 'register.html')
 
 def enter_otp_page(request, user_id):
-
     if request.method == 'POST':
-        user_obj = User.objects.get(id = user_id)
-
-        # To protect the routes from hackers
-        if cache.get(user_obj.username):
-            data = cache.get(user_obj.username)
-
-            if data['count'] >= 3:
-                messages.error(request, "You can request OTP after 5min.")
-                return redirect('/login/')
-            
-            data['count'] += 1
-            cache.set(user_obj.username, data, 60 * 5)
-        else:
-            data = {'count': 1}
-            cache.set(user_obj.username, data, 60 * 5)
-
+        user = get_object_or_404(CustomUser, id=user_id)
         otp = request.POST.get('otp')
 
-        if int(otp) == user_obj.otp:
-            login(request, user_obj)
+        if int(otp) == user.otp:
+            user.is_active = True
+            user.save()
+            login(request, user)
+            messages.success(request, "Account verified successfully!")
             return redirect('/')
-
-        # Message error for wrong otp
-        messages.error(request, "Invalid OTP")
         
-        return redirect(f'/enter_otp/{user_obj.id}/')
+        messages.error(request, "Invalid OTP")
+        return redirect(f'/enter_otp/{user.id[0].id}/')
     
-
     return render(request, 'enter_otp.html')
 
 # To show the cart items
