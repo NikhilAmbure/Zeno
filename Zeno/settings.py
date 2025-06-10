@@ -104,9 +104,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 # Static files directories and root
 STATICFILES_DIRS = [
-    BASE_DIR / 'static', 
+    os.path.join(BASE_DIR, 'static'),
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 CLOUDINARY_STORAGE = {
@@ -115,20 +116,6 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'), 
 }
 
-
-# Configure WhiteNoise storage backend
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
-
-# WhiteNoise configuration
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_AUTOREFRESH = DEBUG
 
 # For HTTPS in production
 # SECURE_SSL_REDIRECT = not DEBUG
