@@ -24,20 +24,6 @@ ALLOWED_HOSTS = [
     '*'
 ]
 
-
-# Configure Cloudinary
-cloudinary.config(
-    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
-    api_key=os.environ.get('CLOUDINARY_API_KEY'),
-    api_secret=os.environ.get('CLOUDINARY_API_SECRET'),
-    secure=True
-)
-
-# Get the Render external hostname
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -53,7 +39,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',  # This should be early in the list
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # This should be early in the list
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -61,23 +47,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-# Add this temporarily for debugging
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django.contrib.staticfiles': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-        },
-    },
-}
 
 # CustomUser model used
 AUTH_USER_MODEL = 'home.CustomUser'
@@ -147,19 +116,19 @@ CLOUDINARY_STORAGE = {
 }
 
 
-# # Configure WhiteNoise storage backend
-# STORAGES = {
-#     "default": {
-#         "BACKEND": "django.core.files.storage.FileSystemStorage",
-#     },
-#     "staticfiles": {
-#         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#     },
-# }
+# Configure WhiteNoise storage backend
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # WhiteNoise configuration
-# WHITENOISE_USE_FINDERS = True
-# WHITENOISE_AUTOREFRESH = DEBUG
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = DEBUG
 
 # For HTTPS in production
 # SECURE_SSL_REDIRECT = not DEBUG
