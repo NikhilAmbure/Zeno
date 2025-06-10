@@ -457,7 +457,7 @@ def razorpay_payment(request):
                 'order': order,
                 'total_amount': total_with_gst,
                 'razorpay_order_id': razorpay_order['id'],
-                'razorpay_merchant_key': settings.RAZORPAY_KEY,
+                'razorpay_merchant_key': settings.RAZORPAY_KEY_ID,
                 'razorpay_amount': razorpay_order['amount'],
                 'currency': 'INR',
                 'callback_url': request.build_absolute_uri('/handle-payment/'),
