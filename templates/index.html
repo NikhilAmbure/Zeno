@@ -636,11 +636,7 @@
         <span class="count">{{ cart_count }}</span>
       </a>
 
-      {% if user.is_authenticated %}
-      <a href="{% url 'logout' %}" class="action-btn">
-        <ion-icon name="log-out-outline"></ion-icon>
-      </a>
-      {% endif %}
+      
     </div>
 
     <nav class="mobile-navigation-menu has-scrollbar" data-mobile-menu>
