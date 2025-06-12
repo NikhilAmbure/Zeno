@@ -3,7 +3,7 @@ from django.core.cache import cache
 from django.contrib import messages
 from .emailer import sendOTPToEmail, send_order_receipt, send_order_cancellation_email
 import random
-from django.contrib.auth import get_user_model, login, logout as auth_logout, authenticate
+from django.contrib.auth import get_user_model, login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser, Product, CartItem, OrderItem, Order, WishlistItem
 from django.contrib.postgres.search import (SearchQuery, SearchVector, SearchRank, TrigramSimilarity)
@@ -19,7 +19,6 @@ User = get_user_model()
 
 # Create your views here.
 
-@login_required(login_url='/login/')
 def index(request):
 
     new_arrivals = Product.objects.filter(is_new=True)[:6]
@@ -54,7 +53,6 @@ def index(request):
 
 
 # Fulltext search
-@login_required(login_url='/login/')
 def search_results(request):
     search = request.GET.get('search', '').strip()
     results = []
@@ -80,7 +78,7 @@ def search_results(request):
         'top_rated': 'Top Rated Products',
         'new_products': 'New Products'
     }
-    
+
     section_name = section_names.get(section, 'Search Results')
 
     return render(request, 'search_results.html', {
@@ -93,39 +91,20 @@ def search_results(request):
 
 def login_page(request):
     if request.method == 'POST':
-        email = request.POST.get('email', '').strip()
-        password = request.POST.get('password', '')
-        remember_me = request.POST.get('remember_me') == 'on'
-
-        if not email or not password:
-            messages.error(request, 'Please provide both email and password')
-            return redirect('/login/')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
 
         try:
-            user = authenticate(request, email=email, password=password)
-            if user is not None:
-                if not user.is_active:
-                    messages.error(request, 'Your account is not activated. Please check your email for verification.')
-                    return redirect('/login/')
-                
+            user = CustomUser.objects.get(email=email)
+            if user.check_password(password):
                 login(request, user)
-                
-                # Set session expiry based on remember me
-                if not remember_me:
-                    request.session.set_expiry(0)  # Session expires when browser closes
-                
-                # Clear any leftover session data from previous flows
-                for key in ['is_password_reset', 'temp_user_data']:
-                    request.session.pop(key, None)
-                
-                next_url = request.GET.get('next', '/')
-                return redirect(next_url)
+                return redirect('/')
             else:
-                messages.error(request, 'Invalid email or password')
-                return redirect('/login/')
-        except Exception as e:
-            messages.error(request, 'An error occurred during login. Please try again.')
-            return redirect('/login/')
+                messages.error(request, "Invalid password")
+        except CustomUser.DoesNotExist:
+            messages.error(request, "User does not exist")
+        
+        return redirect('/login/')
 
     return render(request, 'login.html')
 
@@ -133,30 +112,46 @@ def logout(request):
     auth_logout(request)
     return redirect('/login/')
 
+
 def register_page(request):
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
-        email = request.POST.get('email', '').strip()
-        pass1 = request.POST.get('password1', '')
-        pass2 = request.POST.get('password2', '')
+        # Check if this is an OTP verification submission
+        if 'otp' in request.POST:
+            entered_otp = request.POST.get('otp')
+            stored_otp = request.session.get('registration_otp')
+            registration_data = request.session.get('registration_data')
 
-        # Basic validation
-        if not all([username, email, pass1, pass2]):
-            messages.error(request, "All fields are required.")
-            return render(request, 'register.html')
+            if not stored_otp or not registration_data:
+                messages.error(request, "Registration session expired. Please try again.")
+                return render(request, 'register.html')
 
-        # Password validation
-        if len(pass1) < 8:
-            messages.error(request, "Password must be at least 8 characters long.")
-            return render(request, 'register.html')
+            if int(entered_otp) == stored_otp:
+                # Create the user
+                user = CustomUser(
+                    username=registration_data['username'],
+                    email=registration_data['email']
+                )
+                user.set_password(registration_data['password'])
+                user.save()
+
+                # Clear session data
+                del request.session['registration_data']
+                del request.session['registration_otp']
+
+                messages.success(request, "Account created successfully. Please login.")
+                return redirect('login')
+            else:
+                messages.error(request, "Invalid OTP")
+                return render(request, 'register.html')
+
+        # This is the initial registration form submission
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        pass1 = request.POST.get('password1')
+        pass2 = request.POST.get('password2')
 
         if pass1 != pass2:
             messages.error(request, "Passwords do not match.")
-            return render(request, 'register.html')
-
-        # Username and email validation
-        if len(username) < 3:
-            messages.error(request, "Username must be at least 3 characters long.")
             return render(request, 'register.html')
 
         if CustomUser.objects.filter(username=username).exists():
@@ -167,104 +162,57 @@ def register_page(request):
             messages.error(request, "Email already in use.")
             return render(request, 'register.html')
 
-        try:
-            # Create inactive user
-            user = CustomUser(username=username, email=email, is_active=False)
-            user.set_password(pass1)
-            
-            # Generate and set OTP
-            otp = random.randint(1000, 9999)  # 6-digit OTP
-            user.otp = otp
-            user.save()
+        # Store registration data in session
+        request.session['registration_data'] = {
+            'username': username,
+            'email': email,
+            'password': pass1
+        }
 
-            # Store user data in session temporarily
-            request.session['temp_user_data'] = {
-                'user_id': user.id,
-                'email': email,
-                'registration_time': str(timezone.now())
-            }
+        # Generate and send OTP
+        otp = random.randint(1000, 9999)
+        request.session['registration_otp'] = otp
+        subject = "OTP for Registration"
+        message = f'Your OTP for registration is {otp}'
+        sendOTPToEmail(email, subject, message)
 
-            # Send OTP email
-            subject = "Verify Your Email"
-            message = f'Your verification OTP is {otp}'
-            try:
-                sendOTPToEmail(email, subject, message)
-                messages.success(request, "Please check your email for OTP verification.")
-                return redirect(f'/enter_otp/{user.id}/')
-            except Exception as e:
-                user.delete()  # Delete the user if email sending fails
-                messages.error(request, "Could not send verification email. Please try again.")
-                return render(request, 'register.html')
+        messages.success(request, "Please enter the OTP sent to your email.")
+        return render(request, 'register.html', {'show_otp': True})
 
-        except Exception as e:
-            messages.error(request, f"Registration failed. Please try again.")
-            return render(request, 'register.html')
-        
-    return render(request, 'register.html')
+    return render(request, 'register.html', {'show_otp': False})
 
 def enter_otp_page(request, user_id):
-    try:
-        user = User.objects.get(id=user_id)
-        is_password_reset = request.session.get('is_password_reset', False)
-        temp_user_data = request.session.get('temp_user_data', {})
-        
-        # Security check for registration flow
-        if not is_password_reset and temp_user_data.get('user_id') != user.id:
-            messages.error(request, "Invalid session. Please register again.")
-            return redirect('/register/')
 
-        # Check if OTP has expired (30 minutes)
-        if not is_password_reset and temp_user_data.get('registration_time'):
-            registration_time = timezone.datetime.fromisoformat(temp_user_data['registration_time'])
-            if (timezone.now() - registration_time) > timezone.timedelta(minutes=30):
-                user.delete()
-                messages.error(request, "OTP has expired. Please register again.")
-                return redirect('/register/')
+    if request.method == 'POST':
+        user_obj = User.objects.get(id = user_id)
 
-        if user.is_active and not is_password_reset:
-            messages.error(request, "User is already verified")
-            return redirect('/login/')
+        # To protect the routes from hackers
+        if cache.get(user_obj.username):
+            data = cache.get(user_obj.username)
 
-        if request.method == 'POST':
-            try:
-                otp = request.POST.get('otp', '').strip()
-                if not otp:
-                    messages.error(request, "Please enter OTP")
-                    return redirect(f'/enter_otp/{user_id}/')
+            if data['count'] >= 3:
+                messages.error(request, "You can request OTP after 5min.")
+                return redirect('/login/')
 
-                if not user.otp:
-                    messages.error(request, "OTP has expired or is invalid. Please request a new one.")
-                    return redirect('/forgot-password/' if is_password_reset else '/register/')
+            data['count'] += 1
+            cache.set(user_obj.username, data, 60 * 5)
+        else:
+            data = {'count': 1}
+            cache.set(user_obj.username, data, 60 * 5)
 
-                if int(otp) == user.otp:
-                    if is_password_reset:
-                        # Clear the password reset session flag
-                        del request.session['is_password_reset']
-                        return redirect(f'/reset-password/{user_id}/')
-                    else:
-                        user.is_active = True
-                        user.otp = None  # Clear the OTP
-                        user.save()
-                        # Clear temporary session data
-                        request.session.pop('temp_user_data', None)
-                        messages.success(request, "Account verified successfully. Please login.")
-                        return redirect('/login/')
-                
-                messages.error(request, "Invalid OTP")
-                return redirect(f'/enter_otp/{user_id}/')
+        otp = request.POST.get('otp')
 
-            except ValueError:
-                messages.error(request, "Invalid OTP format")
-                return redirect(f'/enter_otp/{user_id}/')
+        if int(otp) == user_obj.otp:
+            login(request, user_obj)
+            return redirect('/')
 
-        return render(request, 'enter_otp.html', {
-            'is_password_reset': is_password_reset,
-            'email': user.email
-        })
+        # Message error for wrong otp
+        messages.error(request, "Invalid OTP")
 
-    except User.DoesNotExist:
-        messages.error(request, "Invalid user")
-        return redirect('/register/')
+        return redirect(f'/enter_otp/{user_obj.id}/')
+
+
+    return render(request, 'enter_otp.html')
 
 # To show the cart items
 def cart_view(request): 
@@ -440,7 +388,7 @@ def update_cart_quantity(request, product_id):
 @login_required(login_url='/login/')
 def checkout_page(request):
     cart = request.session.get('cart', {})
-    
+
     if not cart:
         messages.error(request, 'Your cart is empty. Please add items to proceed to checkout.')
         return redirect('cart')
@@ -494,7 +442,7 @@ def checkout_page(request):
         request.session['cart'] = {}
         request.session['order_id'] = str(order.id)
         request.session.modified = True
-        
+
         messages.success(request, f'Order #{order.id} created successfully!')
         return redirect('select_payment_method')
 
@@ -514,13 +462,13 @@ def select_payment_method(request):
     if not order_id:
         messages.error(request, 'No order found. Please start checkout again.')
         return redirect('cart')
-    
+
     try:
         order = Order.objects.get(id=order_id, user=request.user)
     except Order.DoesNotExist:
         messages.error(request, 'Invalid order. Please start checkout again.')
         return redirect('cart')
-    
+
     return render(request, 'select_payment_method.html')
 
 
@@ -529,52 +477,53 @@ def razorpay_payment(request):
     if not order_id:
         messages.error(request, 'No order found. Please start checkout again.')
         return redirect('cart')
-    
+
     try:
         order = Order.objects.get(id=order_id, user=request.user)
-        
+
         # Calculate total amount with GST
         gst_rate = Decimal('0.18')
         gst_amount = (order.total_price * gst_rate).quantize(Decimal('0.01'))
         total_with_gst = order.total_price + gst_amount
-        
+
         try:
             # Initialize RazorPay client
             razorpay_handler = RazorPayPayment()
-            
+
             # Create Razorpay order with proper amount formatting
             razorpay_order = razorpay_handler.create_order(
                 amount_in_inr=float(total_with_gst),
                 receipt=f"order_{order.id}"
             )
-            
+
             # Validate Razorpay response
             if not razorpay_order.get('id'):
                 raise ValueError('Invalid response from Razorpay')
-            
+
             # Save Razorpay order ID to session for verification later
             request.session['razorpay_order_id'] = razorpay_order['id']
-            
+
             context = {
                 'order': order,
                 'total_amount': total_with_gst,
                 'razorpay_order_id': razorpay_order['id'],
+                'razorpay_merchant_key': settings.RAZORPAY_KEY,
                 'razorpay_merchant_key': settings.RAZORPAY_KEY_ID,
                 'razorpay_amount': razorpay_order['amount'],
                 'currency': 'INR',
                 'callback_url': request.build_absolute_uri('/handle-payment/'),
                 'gst_amount': gst_amount
             }
-            
+
             return render(request, 'razorpay.html', context)
-            
+
         except (ValueError, KeyError) as e:
             messages.error(request, f'Invalid response from payment gateway: {str(e)}')
             return redirect('select_payment_method')
         except Exception as e:
             messages.error(request, f'Error initializing payment: {str(e)}')
             return redirect('select_payment_method')
-            
+
     except Order.DoesNotExist:
         messages.error(request, 'Order not found')
         return redirect('cart')
@@ -595,30 +544,30 @@ def handle_payment(request):
             'razorpay_order_id': request.POST.get('razorpay_order_id'),
             'razorpay_signature': request.POST.get('razorpay_signature')
         }
-        
+
         # Validate required parameters
         if not all(payment_data.values()):
             messages.error(request, 'Missing payment parameters')
             return redirect('select_payment_method')
-        
+
         # Get the order from session
         session_order_id = request.session.get('order_id')
         if not session_order_id:
             messages.error(request, 'No order found in session')
             return redirect('cart')
-            
+
         # Verify session razorpay_order_id matches the one from callback
         session_razorpay_order_id = request.session.get('razorpay_order_id')
         if session_razorpay_order_id != payment_data['razorpay_order_id']:
             messages.error(request, 'Order ID mismatch')
             return redirect('cart')
-        
+
         try:
             order = Order.objects.get(id=session_order_id, user=request.user)
         except Order.DoesNotExist:
             messages.error(request, 'Order not found')
             return redirect('cart')
-            
+
         # Initialize Razorpay client and verify payment
         try:
             razorpay_handler = RazorPayPayment()
@@ -626,29 +575,29 @@ def handle_payment(request):
         except Exception as e:
             messages.error(request, f'Payment verification failed: {str(e)}')
             return redirect('select_payment_method')
-        
+
         # Update order status
         order.payment_method = 'RAZORPAY'
         order.is_paid = True
         order.status = 'confirmed'
         order.save()
-        
+
         try:
             # Send order confirmation email
             send_order_receipt(order)
         except Exception as e:
             # Log the error but don't stop the process
             print(f"Error sending order receipt: {str(e)}")
-        
+
         # Clear all relevant session data
         session_keys = ['order_id', 'razorpay_order_id', 'cart']
         for key in session_keys:
             request.session.pop(key, None)
         request.session.modified = True
-        
+
         messages.success(request, 'Payment successful! Your order has been confirmed.')
         return redirect('my-orders')
-        
+
     except Exception as e:
         messages.error(request, f'Error processing payment: {str(e)}')
         return redirect('select_payment_method')
@@ -701,18 +650,18 @@ def blog_view(request):
 @login_required(login_url='/login/')
 def my_orders(request):
     orders = Order.objects.filter(user=request.user).order_by('-ordered_at')
-    
+
     total_orders = orders.count()
     total_spent = sum(order.total_price for order in orders)
-    
+
     orders_data = []
-    
+
     for order in orders:
         order_items = order.order_items.all()
-        
+
         items_data = []
         total_items = 0
-        
+
         for item in order_items:
             items_data.append({
                 'product': item.product,
@@ -721,7 +670,7 @@ def my_orders(request):
                 'subtotal': item.subtotal,
             })
             total_items += item.quantity
-        
+
         order_data = {
             'order_id': order.id,
             'status': order.status.title(),
@@ -737,15 +686,15 @@ def my_orders(request):
             'phone': order.phone,
             'tracking_number': order.tracking_number,
         }
-        
+
         orders_data.append(order_data)
-    
+
     context = {
         'orders_data': orders_data,
         'total_orders': total_orders,
         'total_spent': total_spent,
     }
-    
+
     return render(request, 'my_orders.html', context)
 
 
@@ -753,121 +702,45 @@ def my_orders(request):
 @login_required(login_url='/login/')
 def generate_receipt(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    
+
     # Calculate GST and total with GST
     gst_rate = Decimal('0.18')
     gst_amount = (order.total_price * gst_rate).quantize(Decimal('0.01'))
     total_with_gst = order.total_price + gst_amount
-    
+
     context = {
         'order': order,
         'gst_amount': gst_amount,
         'total_with_gst': total_with_gst,
     }
-    
+
     return render(request, 'receipt.html', context)
 
 @login_required(login_url='/login/')
 def cancel_order(request, order_id):
     if request.method == 'POST':
         order = get_object_or_404(Order, id=order_id, user=request.user)
-        
+
         # Check if order can be cancelled
         if order.status not in ['pending', 'confirmed']:
             messages.error(request, 'This order cannot be cancelled.')
             return redirect('my-orders')
-        
+
         try:
             # Update order status
             order.status = 'cancelled'
             order.save()
-            
+
             # Send cancellation email
             cancellation_date = timezone.now()
             send_order_cancellation_email(order, cancellation_date)
-            
+
             messages.success(request, f'Order #{order.id} has been cancelled successfully. A confirmation email has been sent.')
-            
+
         except Exception as e:
             messages.error(request, f'Error cancelling order: {str(e)}')
-        
+
         return redirect('my-orders')
-    
+
     # If GET request, show confirmation page
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    return render(request, 'confirm_cancellation.html', {'order': order})
-
-def forgot_password(request):
-    if request.method == 'POST':
-        email = request.POST.get('email', '').strip()
-        
-        if not email:
-            messages.error(request, "Please enter your email address")
-            return redirect('/forgot-password/')
-        
-        try:
-            user = User.objects.get(email=email)
-            
-            # Rate limiting
-            rate_limit_key = f'forgot_password_{email}'
-            if cache.get(rate_limit_key):
-                messages.error(request, 'Please wait 5 minutes before requesting another OTP')
-                return redirect('/forgot-password/')
-            
-            # Generate and set OTP
-            otp = random.randint(1000, 9999)  
-            user.save()
-            
-            try:
-                # Send OTP email
-                subject = "Password Reset OTP"
-                message = f'Your password reset OTP is {otp}. This OTP will expire in 30 minutes.'
-                sendOTPToEmail(email, subject, message)
-                
-                # Set rate limit
-                cache.set(rate_limit_key, True, 300)  # 5 minutes
-                
-                # Store reset timestamp in session
-                request.session['is_password_reset'] = True
-                request.session['reset_timestamp'] = str(timezone.now())
-                
-                messages.success(request, "Please check your email for the password reset OTP")
-                return redirect(f'/enter_otp/{user.id}/')
-                
-            except Exception as e:
-                user.otp = None
-                user.save()
-                messages.error(request, "Could not send reset email. Please try again later.")
-                return redirect('/forgot-password/')
-            
-        except User.DoesNotExist:
-            # Use the same message as success for security
-            messages.success(request, "If an account exists with this email, you will receive a password reset OTP.")
-            return redirect('/forgot-password/')
-            
-    return render(request, 'forgot_password.html')
-
-def reset_password(request, user_id):
-    try:
-        user = User.objects.get(id=user_id)
-        
-        if request.method == 'POST':
-            password1 = request.POST.get('password1')
-            password2 = request.POST.get('password2')
-            
-            if password1 != password2:
-                messages.error(request, "Passwords do not match")
-                return redirect(f'/reset-password/{user_id}/')
-            
-            user.set_password(password1)
-            user.otp = None  # Clear the OTP
-            user.save()
-            
-            messages.success(request, "Password reset successful. Please login with your new password.")
-            return redirect('/login/')
-            
-        return render(request, 'reset_password.html', {'user_id': user_id})
-        
-    except User.DoesNotExist:
-        messages.error(request, "Invalid user")
-        return redirect('/login/')

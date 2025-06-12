@@ -1,13 +1,12 @@
 {% load static %}
-{% load cloudinary %}
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login | Zeno</title>
+  <title>Login | E-Commerce</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="shortcut icon" href="{% static 'assets/images/logo/zeno_logo.png' %}" type="image/x-icon" />
+  <link rel="shortcut icon" href="{% static 'assets/images/logo/favicon.svg' %}" type="image/x-icon" />
 </head>
 <body class="bg-pink-50">
 
@@ -32,7 +31,7 @@
         {% if messages %}
         <ul class="mb-3">
           {% for message in messages %}
-          <li class="text-xs {% if message.tags == 'error' %}text-red-600{% else %}text-green-600{% endif %} font-medium mb-1">{{ message }}</li>
+          <li class="text-xs text-red-600 font-medium mb-1">{{ message }}</li>
           {% endfor %}
         </ul>
         {% endif %}
@@ -61,10 +60,10 @@
 
         <div class="flex items-center justify-between text-xs text-gray-600">
           <label class="flex items-center gap-2">
-            <input type="checkbox" name="remember_me" class="form-checkbox text-pink-500" />
+            <input type="checkbox" class="form-checkbox text-pink-500" />
             Remember me
           </label>
-          <a href="{% url 'forgot-password' %}" class="text-pink-600 hover:underline">Forgot password?</a>
+          <a href="#" class="text-pink-600 hover:underline">Forgot password?</a>
         </div>
 
         <button

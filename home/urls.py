@@ -8,7 +8,6 @@ urlpatterns = [
     path('login/', login_page, name='login'),
     path('logout/', logout, name='logout'),
     path('register/', register_page, name='register'),
-    path('enter_otp/<int:user_id>/', enter_otp_page, name='enter_otp'),
 
     path('cart/', cart_view, name='cart'),
     path('cart/add/<int:product_id>/', add_to_cart, name='add_to_cart'),
@@ -35,8 +34,5 @@ urlpatterns = [
     path('handle-payment/', handle_payment, name='handle_payment'),
     path('receipt/<int:order_id>/', generate_receipt, name='generate_receipt'),
     path('cancel-order/<int:order_id>/', cancel_order, name='cancel_order'),
-
-    path('forgot-password/', forgot_password, name='forgot-password'),
-    path('reset-password/<int:user_id>/', reset_password, name='reset-password'),
 
 ]
