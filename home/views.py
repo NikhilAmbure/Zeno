@@ -110,7 +110,7 @@ def login_page(request):
 
 def logout(request):
     auth_logout(request)
-    return redirect('/login/')
+    return redirect('index')
 
 
 def register_page(request):
